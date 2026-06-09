@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/components/auth-button";
 
 export function NavBar() {
   return (
@@ -12,15 +13,18 @@ export function NavBar() {
             crossOrigin="anonymous"
           />
         </a>
-        <Button
-          size="sm"
-          className="h-9 rounded-full bg-[#38b6ff] px-5 text-sm font-medium text-white hover:bg-[#2da4eb]"
-          asChild
-        >
-          <a href="https://intereco.org.cn/d/318" target="_blank" rel="noopener noreferrer">
-            进一步了解
-          </a>
-        </Button>
+        <div className="flex items-center gap-3">
+          <AuthButton />
+          <Button
+            size="sm"
+            className="h-9 rounded-full bg-[#38b6ff] px-5 text-sm font-medium text-white hover:bg-[#2da4eb]"
+            asChild
+          >
+            <a href="https://intereco.org.cn/d/318" target="_blank" rel="noopener noreferrer">
+              进一步了解
+            </a>
+          </Button>
+        </div>
       </div>
     </nav>
   );

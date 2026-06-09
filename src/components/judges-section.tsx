@@ -10,7 +10,7 @@ interface Judge {
 }
 
 const judges: Judge[] = [
-  { name: "安逸", title: "圈内知名创作者", avatar: `${IMG_BASE}/anyi.jpg`, border: "hover:border-blue-200" },
+  { name: "安逸", title: "「安逸PPT」账号主理人，金山最具价值专家(KVP)，微软国际办公认证MOS-PPT专家，51PPT模板网大设计师", avatar: `${IMG_BASE}/anyi.jpg`, border: "hover:border-blue-200" },
   { name: "Beetroot_", title: "圈内知名创作者", avatar: `${IMG_BASE}/beetroot.jpg`, border: "hover:border-emerald-200" },
   { name: "失窗", title: "圈内知名创作者", avatar: `${IMG_BASE}/shichuang.jpg`, border: "hover:border-purple-200" },
   { name: "LenkMat_临空牧野", title: "圈内知名创作者", avatar: `${IMG_BASE}/lenkmat.jpg`, border: "hover:border-orange-200" },
