@@ -12,7 +12,7 @@ export function HeroSection() {
 
       <div className="relative z-10 mx-auto max-w-6xl w-full">
         {/* Main title */}
-        <h1 className="hero-title mb-6 max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="hero-title mb-6 max-w-4xl text-4xl font-medium leading-[1.1] tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl">
           <span className="block">界面生态</span>
           <span className="mt-2 block text-[#38b6ff]">
             PPTOS 创意设计大赛
