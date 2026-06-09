@@ -7,6 +7,13 @@
 		"nodejs_compat",
 		"global_fetch_strictly_public"
 	],
+	"vars": {
+		"CASDOOR_ENDPOINT": "https://auth.intereco.org.cn/",
+		"CASDOOR_CLIENT_ID": "5216e83eda6508ba5f51",
+		"CASDOOR_ORGANIZATION": "界面生态",
+		"CASDOOR_APPLICATION": "界面生态 IPOA 赛事",
+		"TURSO_DATABASE_URL": "libsql://ipoa-hanhanweb.aws-ap-northeast-1.turso.io"
+	},
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
