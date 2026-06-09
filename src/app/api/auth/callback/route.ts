@@ -75,6 +75,7 @@ export async function GET(request: Request) {
     return response;
   } catch (err) {
     console.error("Auth callback error:", err);
-    return NextResponse.redirect(new URL("/?error=auth_failed", url.origin));
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return new NextResponse(`Auth Error: ${errorMsg}`, { status: 500 });
   }
 }
