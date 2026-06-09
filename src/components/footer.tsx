@@ -34,9 +34,6 @@ export function Footer() {
               className="h-10 w-auto"
               crossOrigin="anonymous"
             />
-            <p className="mt-4 text-sm leading-relaxed text-slate-500">
-              搭建 PPTOS 爱好者交流展示平台、挖掘创意人才
-            </p>
           </div>
 
           {/* Right: Link groups */}
