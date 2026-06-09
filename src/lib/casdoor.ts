@@ -1,4 +1,4 @@
-const CASDOOR_ENDPOINT = process.env.CASDOOR_ENDPOINT!;
+const CASDOOR_ENDPOINT = process.env.CASDOOR_ENDPOINT!.replace(/\/+$/, "");
 const CLIENT_ID = process.env.CASDOOR_CLIENT_ID!;
 const CLIENT_SECRET = process.env.CASDOOR_CLIENT_SECRET!;
 
