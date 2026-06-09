@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, User } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
 
 interface UserInfo {
   id: string;
@@ -30,40 +40,66 @@ export function AuthButton() {
 
   if (user) {
     return (
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          {user.avatar ? (
-            <img src={user.avatar} alt={user.name} className="size-7 rounded-full object-cover" />
-          ) : (
-            <User className="size-4 text-slate-500" />
-          )}
-          <span className="text-sm text-slate-700">{user.name}</span>
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-8 rounded-full px-3 text-xs"
-          asChild
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button className="flex items-center gap-2 rounded-full px-2.5 py-1.5 transition-colors hover:bg-accent outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          }
         >
-          <a href="/api/auth/logout">
-            <LogOut className="mr-1 size-3" />
-            退出
-          </a>
-        </Button>
-      </div>
+          <Avatar size="sm" className="after:border-0">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback>
+              {user.name?.charAt(0)?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <span className="max-w-[100px] truncate text-sm font-medium text-foreground">
+            {user.name}
+          </span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={8} className="min-w-48">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>
+              <div className="flex items-center gap-2">
+                <Avatar className="after:border-0">
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarFallback>
+                    {user.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{user.name}</span>
+                  <span className="text-xs text-muted-foreground">{user.email}</span>
+                </div>
+              </div>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem render={<a href="/dashboard" />}>
+              <LayoutDashboard data-icon="inline-start" />
+              控制台
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              render={<a href="/api/auth/logout" />}
+            >
+              <LogOut data-icon="inline-start" />
+              退出登录
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
 
   return (
     <Button
-      size="sm"
-      className="h-8 rounded-full bg-[#38b6ff] px-4 text-xs font-medium text-white hover:bg-[#2da4eb]"
-      asChild
+      size="default"
+      className="rounded-full bg-[#38b6ff] text-white hover:bg-[#2da4eb]"
+      render={<a href="/api/auth/login" />}
     >
-      <a href="/api/auth/login">
-        <LogIn className="mr-1 size-3" />
-        登录
-      </a>
+      <LogIn data-icon="inline-start" />
+      登录
     </Button>
   );
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getAccessToken, getUserInfo } from "@/lib/casdoor";
 import { getDb, initDb } from "@/lib/db";
 
@@ -11,37 +12,26 @@ export async function GET(request: Request) {
 
   try {
     const redirectUri = `${url.origin}/api/auth/callback`;
-    
-    // Step 1: Exchange code for token
-    console.log("Step 1: Exchanging code for token...");
-    const accessToken = await getAccessToken(code, redirectUri);
-    console.log("Step 1: Got access token");
-    
-    // Step 2: Get user info
-    console.log("Step 2: Getting user info...");
+
+    // Read PKCE verifier from cookie
+    const cookieStore = await cookies();
+    const codeVerifier = cookieStore.get("pkce_verifier")?.value;
+    if (!codeVerifier) {
+      return NextResponse.redirect(new URL("/?error=missing_pkce_verifier", url.origin));
+    }
+
+    const accessToken = await getAccessToken(code, redirectUri, codeVerifier);
     const casdoorUser = await getUserInfo(accessToken);
-    console.log("Step 2: Got user info:", casdoorUser.name, casdoorUser.id);
-    
-    // Step 3: Initialize database
-    console.log("Step 3: Initializing database...");
-    console.log("DB URL:", process.env.TURSO_DATABASE_URL ? "set" : "NOT SET");
-    console.log("DB Token:", process.env.TURSO_AUTH_TOKEN ? "set" : "NOT SET");
+
     await initDb();
-    console.log("Step 3: Database initialized");
-    
-    // Step 4: Check if user exists
-    console.log("Step 4: Checking if user exists...");
     const existing = await getDb().execute({
       sql: "SELECT * FROM users WHERE casdoor_id = ?",
       args: [casdoorUser.id],
     });
-    console.log("Step 4: Found", existing.rows.length, "existing users");
 
     if (existing.rows.length === 0) {
-      // Check if this is the first user (admin)
       const count = await getDb().execute("SELECT COUNT(*) as cnt FROM users");
       const isFirst = (count.rows[0].cnt as number) === 0;
-      console.log("Step 5: Creating new user, isFirst:", isFirst);
 
       await getDb().execute({
         sql: "INSERT INTO users (casdoor_id, name, email, avatar, role) VALUES (?, ?, ?, ?, ?)",
@@ -53,7 +43,6 @@ export async function GET(request: Request) {
           isFirst ? "admin" : "user",
         ],
       });
-      console.log("Step 5: User created successfully");
     } else {
       // Update last login
       await getDb().execute({
@@ -62,7 +51,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // Set session cookie
+    // Set session cookie and clear PKCE verifier
     const response = NextResponse.redirect(new URL("/", url.origin));
     response.cookies.set("session_user_id", casdoorUser.id, {
       httpOnly: true,
@@ -71,6 +60,7 @@ export async function GET(request: Request) {
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
+    response.cookies.delete("pkce_verifier");
 
     return response;
   } catch (err) {

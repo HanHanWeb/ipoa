@@ -8,21 +8,41 @@ function getClientSecret() {
   return process.env.CASDOOR_CLIENT_SECRET || "";
 }
 
-export function getAuthUrl(redirectUri: string): string {
+// PKCE helpers
+export function generateCodeVerifier(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+export async function generateCodeChallenge(verifier: string): Promise<string> {
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+export function getAuthUrl(redirectUri: string, codeChallenge: string): string {
   const params = new URLSearchParams({
     client_id: getClientId(),
     response_type: "code",
     redirect_uri: redirectUri,
     scope: "openid profile email",
     state: crypto.randomUUID(),
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
   });
   return `${getEndpoint()}/login/oauth/authorize?${params.toString()}`;
 }
 
-export async function getAccessToken(code: string, redirectUri: string): Promise<string> {
+export async function getAccessToken(code: string, redirectUri: string, codeVerifier: string): Promise<string> {
   const url = `${getEndpoint()}/api/login/oauth/access_token`;
-  console.log("Token exchange URL:", url);
-  
+
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -32,12 +52,12 @@ export async function getAccessToken(code: string, redirectUri: string): Promise
       client_secret: getClientSecret(),
       code,
       redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
     }),
   });
-  
+
   const text = await res.text();
-  console.log("Token response status:", res.status, "body:", text.substring(0, 500));
-  
+
   try {
     const data = JSON.parse(text);
     if (data.error) throw new Error(data.error_description || data.error);

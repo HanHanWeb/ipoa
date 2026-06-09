@@ -28,14 +28,12 @@ export function HeroSection() {
         <Button
           size="lg"
           className="group/btn h-11 gap-1.5 rounded-full bg-[#38b6ff] px-8 text-sm font-medium text-white shadow-lg shadow-[#38b6ff]/20 hover:bg-[#2da4eb]"
-          asChild
+          render={<a href="https://intereco.org.cn/d/318" target="_blank" rel="noopener noreferrer" />}
         >
-          <a href="https://intereco.org.cn/d/318" target="_blank" rel="noopener noreferrer">
-            <span className="inline-flex items-center gap-1">
-              进一步了解
-              <ChevronRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-            </span>
-          </a>
+          <span className="inline-flex items-center gap-1">
+            进一步了解
+            <ChevronRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+          </span>
         </Button>
       </div>
     </section>
