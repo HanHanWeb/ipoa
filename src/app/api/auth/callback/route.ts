@@ -11,22 +11,37 @@ export async function GET(request: Request) {
 
   try {
     const redirectUri = `${url.origin}/api/auth/callback`;
+    
+    // Step 1: Exchange code for token
+    console.log("Step 1: Exchanging code for token...");
     const accessToken = await getAccessToken(code, redirectUri);
+    console.log("Step 1: Got access token");
+    
+    // Step 2: Get user info
+    console.log("Step 2: Getting user info...");
     const casdoorUser = await getUserInfo(accessToken);
-
-    // Ensure table exists
+    console.log("Step 2: Got user info:", casdoorUser.name, casdoorUser.id);
+    
+    // Step 3: Initialize database
+    console.log("Step 3: Initializing database...");
+    console.log("DB URL:", process.env.TURSO_DATABASE_URL ? "set" : "NOT SET");
+    console.log("DB Token:", process.env.TURSO_AUTH_TOKEN ? "set" : "NOT SET");
     await initDb();
-
-    // Check if user exists
+    console.log("Step 3: Database initialized");
+    
+    // Step 4: Check if user exists
+    console.log("Step 4: Checking if user exists...");
     const existing = await getDb().execute({
       sql: "SELECT * FROM users WHERE casdoor_id = ?",
       args: [casdoorUser.id],
     });
+    console.log("Step 4: Found", existing.rows.length, "existing users");
 
     if (existing.rows.length === 0) {
       // Check if this is the first user (admin)
       const count = await getDb().execute("SELECT COUNT(*) as cnt FROM users");
       const isFirst = (count.rows[0].cnt as number) === 0;
+      console.log("Step 5: Creating new user, isFirst:", isFirst);
 
       await getDb().execute({
         sql: "INSERT INTO users (casdoor_id, name, email, avatar, role) VALUES (?, ?, ?, ?, ?)",
@@ -38,6 +53,7 @@ export async function GET(request: Request) {
           isFirst ? "admin" : "user",
         ],
       });
+      console.log("Step 5: User created successfully");
     } else {
       // Update last login
       await getDb().execute({
