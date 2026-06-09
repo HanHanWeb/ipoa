@@ -1,20 +1,26 @@
-const CASDOOR_ENDPOINT = process.env.CASDOOR_ENDPOINT!.replace(/\/+$/, "");
-const CLIENT_ID = process.env.CASDOOR_CLIENT_ID!;
-const CLIENT_SECRET = process.env.CASDOOR_CLIENT_SECRET!;
+function getEndpoint() {
+  return (process.env.CASDOOR_ENDPOINT || "").replace(/\/+$/, "");
+}
+function getClientId() {
+  return process.env.CASDOOR_CLIENT_ID || "";
+}
+function getClientSecret() {
+  return process.env.CASDOOR_CLIENT_SECRET || "";
+}
 
 export function getAuthUrl(redirectUri: string): string {
   const params = new URLSearchParams({
-    client_id: CLIENT_ID,
+    client_id: getClientId(),
     response_type: "code",
     redirect_uri: redirectUri,
     scope: "openid profile email",
     state: crypto.randomUUID(),
   });
-  return `${CASDOOR_ENDPOINT}/login/oauth/authorize?${params.toString()}`;
+  return `${getEndpoint()}/login/oauth/authorize?${params.toString()}`;
 }
 
 export async function getAccessToken(code: string, redirectUri: string): Promise<string> {
-  const url = `${CASDOOR_ENDPOINT}/api/login/oauth/access_token`;
+  const url = `${getEndpoint()}/api/login/oauth/access_token`;
   console.log("Token exchange URL:", url);
   
   const res = await fetch(url, {
@@ -22,8 +28,8 @@ export async function getAccessToken(code: string, redirectUri: string): Promise
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       grant_type: "authorization_code",
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
+      client_id: getClientId(),
+      client_secret: getClientSecret(),
       code,
       redirect_uri: redirectUri,
     }),
@@ -49,7 +55,7 @@ export interface CasdoorUser {
 }
 
 export async function getUserInfo(accessToken: string): Promise<CasdoorUser> {
-  const res = await fetch(`${CASDOOR_ENDPOINT}/api/userinfo`, {
+  const res = await fetch(`${getEndpoint()}/api/userinfo`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   const data = await res.json();
