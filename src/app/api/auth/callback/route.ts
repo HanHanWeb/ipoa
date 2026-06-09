@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAccessToken, getUserInfo } from "@/lib/casdoor";
-import { db, initDb } from "@/lib/db";
+import { getDb, initDb } from "@/lib/db";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -18,17 +18,17 @@ export async function GET(request: Request) {
     await initDb();
 
     // Check if user exists
-    const existing = await db.execute({
+    const existing = await getDb().execute({
       sql: "SELECT * FROM users WHERE casdoor_id = ?",
       args: [casdoorUser.id],
     });
 
     if (existing.rows.length === 0) {
       // Check if this is the first user (admin)
-      const count = await db.execute("SELECT COUNT(*) as cnt FROM users");
+      const count = await getDb().execute("SELECT COUNT(*) as cnt FROM users");
       const isFirst = (count.rows[0].cnt as number) === 0;
 
-      await db.execute({
+      await getDb().execute({
         sql: "INSERT INTO users (casdoor_id, name, email, avatar, role) VALUES (?, ?, ?, ?, ?)",
         args: [
           casdoorUser.id,
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       });
     } else {
       // Update last login
-      await db.execute({
+      await getDb().execute({
         sql: "UPDATE users SET last_login = datetime('now'), name = ?, email = ?, avatar = ? WHERE casdoor_id = ?",
         args: [casdoorUser.name, casdoorUser.email, casdoorUser.avatar, casdoorUser.id],
       });

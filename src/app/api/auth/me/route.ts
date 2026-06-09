@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { db, initDb } from "@/lib/db";
+import { getDb, initDb } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     await initDb();
-    const result = await db.execute({
+    const result = await getDb().execute({
       sql: "SELECT casdoor_id, name, email, avatar, role FROM users WHERE casdoor_id = ?",
       args: [userId],
     });

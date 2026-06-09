@@ -1,13 +1,20 @@
-import { createClient } from "@libsql/client";
+import { createClient, type Client } from "@libsql/client";
 
-export const db = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN!,
-});
+let _db: Client | null = null;
+
+export function getDb(): Client {
+  if (!_db) {
+    _db = createClient({
+      url: process.env.TURSO_DATABASE_URL!,
+      authToken: process.env.TURSO_AUTH_TOKEN!,
+    });
+  }
+  return _db;
+}
 
 // Initialize users table
 export async function initDb() {
-  await db.execute(`
+  await getDb().execute(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       casdoor_id TEXT UNIQUE NOT NULL,
