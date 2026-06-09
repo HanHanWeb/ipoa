@@ -1,3 +1,0 @@
-module.exports=[27572,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"zh-CN",className:"dark h-full",children:(0,b.jsx)("body",{className:"min-h-full flex flex-col",children:a})})},"metadata",0,{title:"界面生态 PPTOS 创意设计大赛",description:"为搭建 PPT OS 设计爱好者公益交流展示平台、挖掘创意人才，界面生态特举办界面生态 PPTOS 创意设计大赛。",icons:{icon:"https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/favicon_wh.png"}}])},50645,a=>{a.n(a.i(27572))}];
-
-//# sourceMappingURL=src_app_layout_tsx_0r5yz5t._.js.map
