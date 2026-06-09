@@ -132,7 +132,7 @@
 }
 
 @keyframes sweep-spin {
-  to { transform: rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .btn-sweep-wrapper {
@@ -140,13 +140,18 @@
   display: inline-flex;
   border-radius: 9999px;
   padding: 2px;
+  overflow: hidden;
 }
 
 .btn-sweep-wrapper::before {
   content: '';
   position: absolute;
-  inset: -2px;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
   border-radius: 9999px;
+  transform: translate(-50%, -50%) rotate(0deg);
   background: conic-gradient(
     from 0deg,
     #5cd0ff,
@@ -158,7 +163,6 @@
   );
   opacity: 0;
   transition: opacity 0.3s;
-  z-index: 0;
 }
 
 .btn-sweep-wrapper:hover::before {
