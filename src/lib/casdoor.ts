@@ -14,7 +14,10 @@ export function getAuthUrl(redirectUri: string): string {
 }
 
 export async function getAccessToken(code: string, redirectUri: string): Promise<string> {
-  const res = await fetch(`${CASDOOR_ENDPOINT}/api/login/oauth/access_token`, {
+  const url = `${CASDOOR_ENDPOINT}/api/login/oauth/access_token`;
+  console.log("Token exchange URL:", url);
+  
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -25,9 +28,17 @@ export async function getAccessToken(code: string, redirectUri: string): Promise
       redirect_uri: redirectUri,
     }),
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error_description || data.error);
-  return data.access_token;
+  
+  const text = await res.text();
+  console.log("Token response status:", res.status, "body:", text.substring(0, 500));
+  
+  try {
+    const data = JSON.parse(text);
+    if (data.error) throw new Error(data.error_description || data.error);
+    return data.access_token;
+  } catch {
+    throw new Error(`Token exchange failed: ${res.status} ${text.substring(0, 200)}`);
+  }
 }
 
 export interface CasdoorUser {
