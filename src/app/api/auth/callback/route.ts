@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     }
 
     // Set session cookie and clear PKCE verifier
-    const response = NextResponse.redirect(new URL("/", url.origin));
+    const response = NextResponse.redirect(new URL("/dashboard", url.origin));
     response.cookies.set("session_user_id", casdoorUser.id, {
       httpOnly: true,
       secure: true,
