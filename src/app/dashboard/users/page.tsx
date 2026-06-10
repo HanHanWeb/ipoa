@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users } from "lucide-react";
+import { Users, Loader2 } from "lucide-react";
 
 interface UserItem {
   id: number;
@@ -90,7 +90,9 @@ export default function UsersPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-semibold">用户管理</h1>
-        <p className="text-muted-foreground">加载中...</p>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
       </div>
     );
   }

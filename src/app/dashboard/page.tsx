@@ -187,7 +187,11 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="size-5" />
-              {countdown.label}
+              {countdown.status === "loading" ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                countdown.label
+              )}
             </CardTitle>
             <CardDescription>
               {countdown.status === "loading"

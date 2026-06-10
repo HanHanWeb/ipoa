@@ -26,7 +26,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList } from "lucide-react";
+import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2 } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
@@ -167,8 +167,8 @@ export default function DashboardLayout({
                       </div>
                     </>
                   ) : (
-                    <span className="flex-1 text-sm text-muted-foreground">
-                      加载中...
+                    <span className="flex flex-1 items-center justify-center">
+                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
                     </span>
                   )}
                 </DropdownMenuTrigger>

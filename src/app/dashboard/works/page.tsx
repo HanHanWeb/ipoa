@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ClipboardList, CheckCircle, XCircle, Eye } from "lucide-react";
+import { ClipboardList, CheckCircle, XCircle, Eye, Loader2 } from "lucide-react";
 
 interface WorkItem {
   id: number;
@@ -126,7 +126,9 @@ export default function WorksPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-semibold">作品列表</h1>
-        <p className="text-muted-foreground">加载中...</p>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
       </div>
     );
   }

@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Megaphone, Plus, Trash2, Pin } from "lucide-react";
+import { Megaphone, Plus, Trash2, Pin, Loader2 } from "lucide-react";
 
 interface Notice {
   id: number;
@@ -133,7 +133,9 @@ export default function NoticesPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-muted-foreground">加载中...</p>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
           ) : notices.length === 0 ? (
             <p className="text-muted-foreground">暂无公告</p>
           ) : (
