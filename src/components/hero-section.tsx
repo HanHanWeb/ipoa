@@ -1,7 +1,21 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) setLoggedIn(true);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="relative flex min-h-screen flex-col items-start justify-center overflow-hidden bg-white px-4">
       {/* Subtle radial gradient background */}
@@ -24,17 +38,30 @@ export function HeroSection() {
           为搭建 PPT OS 设计爱好者公益交流展示平台、挖掘创意人才，界面生态特举办界面生态 PPTOS 创意设计大赛。大赛为纯公益在线赛事，全程不收取任何费用。
         </p>
 
-        {/* CTA Button */}
-        <Button
-          size="lg"
-          className="group/btn h-11 gap-1.5 rounded-full bg-[#38b6ff] px-8 text-sm font-medium text-white shadow-lg shadow-[#38b6ff]/20 hover:bg-[#2da4eb]"
-          render={<a href="https://intereco.org.cn/d/318" target="_blank" rel="noopener noreferrer" />}
-        >
-          <span className="inline-flex items-center gap-1">
-            进一步了解
-            <ChevronRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-          </span>
-        </Button>
+        {/* CTA Buttons */}
+        <div className="flex items-center gap-3">
+          <Button
+            size="lg"
+            className="group/btn h-11 gap-1.5 rounded-full bg-[#38b6ff] px-8 text-sm font-medium text-white shadow-lg shadow-[#38b6ff]/20 hover:bg-[#2da4eb]"
+            render={<a href={loggedIn ? "/dashboard" : "/api/auth/login"} />}
+          >
+            <span className="inline-flex items-center gap-1">
+              {loggedIn ? "进入控制台" : "立即参与"}
+              <ChevronRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+            </span>
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="group/btn h-11 gap-1.5 rounded-full px-8 text-sm font-medium"
+            render={<a href="https://intereco.org.cn/d/318" target="_blank" rel="noopener noreferrer" />}
+          >
+            <span className="inline-flex items-center gap-1">
+              进一步了解
+              <ChevronRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+            </span>
+          </Button>
+        </div>
       </div>
     </section>
   );
