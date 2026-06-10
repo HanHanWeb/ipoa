@@ -109,7 +109,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     {user.email}
                   </p>
-                  <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                  <Badge variant="default">
                     {user.role === "admin" ? "管理员" : "参赛者"}
                   </Badge>
                 </div>

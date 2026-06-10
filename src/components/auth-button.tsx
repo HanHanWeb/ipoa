@@ -95,7 +95,7 @@ export function AuthButton() {
   return (
     <Button
       size="default"
-      className="rounded-full bg-[#38b6ff] text-white hover:bg-[#2da4eb]"
+      className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
       render={<a href="/api/auth/login" />}
     >
       <LogIn data-icon="inline-start" />
