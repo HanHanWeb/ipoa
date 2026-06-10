@@ -159,7 +159,7 @@ export default function SubmitPage() {
   };
 
   const handleSubmit = async () => {
-    if (!workType || !owner.trim() || !title.trim() || !description.trim() || imageUrls.length === 0) {
+    if (!workType || !owner.trim() || !title.trim() || !description.trim() || !version.trim() || !completionDate || !contact.trim() || !os.trim() || !tool.trim() || imageUrls.length === 0) {
       setMessage("请填写所有必填字段");
       return;
     }
@@ -328,6 +328,17 @@ export default function SubmitPage() {
             </Select>
           </div>
 
+          {needsSourceUrl && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label className="text-sm font-medium">原作品出处 <span className="text-red-500">*</span></label>
+              <Input
+                placeholder="请输入原作品链接"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+              />
+            </div>
+          )}
+
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label className="text-sm font-medium">作品所有人 / 组织 <span className="text-red-500">*</span></label>
             <Input
@@ -356,25 +367,27 @@ export default function SubmitPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品版本号</label>
+            <label className="text-sm font-medium">作品版本号 <span className="text-red-500">*</span></label>
             <Input
-              placeholder="例如：v1.0"
+              placeholder="v1.0"
               value={version}
               onChange={(e) => setVersion(e.target.value)}
             />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品完成日期</label>
+            <label className="text-sm font-medium">作品完成日期 <span className="text-red-500">*</span></label>
             <Input
               type="date"
+              min="2000-01-01"
+              max="2099-12-31"
               value={completionDate}
               onChange={(e) => setCompletionDate(e.target.value)}
             />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作者联系方式（QQ / 微信）</label>
+            <label className="text-sm font-medium">作者联系方式 <span className="text-red-500">*</span></label>
             <Input
               placeholder="请输入 QQ 号或微信号"
               value={contact}
@@ -384,34 +397,23 @@ export default function SubmitPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium">操作系统</label>
+              <label className="text-sm font-medium">操作系统 <span className="text-red-500">*</span></label>
               <Input
-                placeholder="例如：macOS / Windows / iPadOS"
+                placeholder="macOS / Windows"
                 value={os}
                 onChange={(e) => setOs(e.target.value)}
               />
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium">使用工具</label>
+              <label className="text-sm font-medium">使用工具 <span className="text-red-500">*</span></label>
               <Input
-                placeholder="例如：Keynote / PowerPoint / WPS"
+                placeholder="Keynote / PowerPoint / WPS"
                 value={tool}
                 onChange={(e) => setTool(e.target.value)}
               />
             </div>
           </div>
-
-          {needsSourceUrl && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium">原作品出处 <span className="text-red-500">*</span></label>
-              <Input
-                placeholder="请输入原作品链接"
-                value={sourceUrl}
-                onChange={(e) => setSourceUrl(e.target.value)}
-              />
-            </div>
-          )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <div>
