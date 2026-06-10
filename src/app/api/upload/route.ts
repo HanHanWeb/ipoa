@@ -43,16 +43,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "COS 未配置" }, { status: 500 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-    if (!file) {
-      return NextResponse.json({ error: "缺少文件" }, { status: 400 });
+    const { filename } = await request.json();
+    if (!filename) {
+      return NextResponse.json({ error: "缺少文件名" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop() || "jpg";
+    const ext = filename.split(".").pop() || "jpg";
     const key = `ipoa/2026/${userId}/${Date.now()}.${ext}`;
     const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
-    const fileBuf = await file.arrayBuffer();
 
     const now = Math.floor(Date.now() / 1000);
     const expire = now + 600;
@@ -62,25 +60,12 @@ export async function POST(request: Request) {
     const sha1ed = await sha1Hex(httpStr);
     const stringToSign = `sha1\n${signTime}\n${sha1ed}\n`;
     const sig = await hmacSha1(signKey, stringToSign);
-    const auth = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sig}`;
+    const signStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sig}`;
 
-    const cosRes = await fetch(`https://${host}/${key}`, {
-      method: "PUT",
-      headers: {
-        Host: host,
-        Authorization: auth,
-        "Content-Type": file.type || "application/octet-stream",
-      },
-      body: fileBuf,
-    });
+    const uploadUrl = `https://${host}/${key}?${signStr}`;
+    const imageUrl = `https://${host}/${key}`;
 
-    if (!cosRes.ok) {
-      const errText = await cosRes.text();
-      console.error("COS upload failed:", cosRes.status, errText);
-      return NextResponse.json({ error: `COS ${cosRes.status}: ${errText}` }, { status: 500 });
-    }
-
-    return NextResponse.json({ imageUrl: `https://${host}/${key}` });
+    return NextResponse.json({ uploadUrl, imageUrl });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("Upload error:", msg);

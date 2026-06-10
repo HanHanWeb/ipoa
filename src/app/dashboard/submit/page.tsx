@@ -104,12 +104,10 @@ export default function SubmitPage() {
     try {
       const uploaded: string[] = [];
       for (const file of toUpload) {
-        const fd = new FormData();
-        fd.append("file", file);
-
         const res = await fetch("/api/upload", {
           method: "POST",
-          body: fd,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name }),
         });
 
         if (!res.ok) {
@@ -119,8 +117,21 @@ export default function SubmitPage() {
           return;
         }
 
-        const { imageUrl: url } = await res.json();
-        uploaded.push(url);
+        const { uploadUrl, imageUrl: url } = await res.json();
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (uploadRes.ok) {
+          uploaded.push(url);
+        } else {
+          setMessage("图片上传失败");
+          setUploading(false);
+          return;
+        }
       }
 
       setImageUrls((prev) => [...prev, ...uploaded]);
