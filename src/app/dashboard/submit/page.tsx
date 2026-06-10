@@ -123,11 +123,13 @@ export default function SubmitPage() {
     }
 
     const scriptId = "turnstile-script";
+    let rendered = false;
     
     const tryRender = () => {
+      if (rendered) return;
       const w = window as unknown as { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => void } };
-      if (w.turnstile && turnstileRef.current) {
-        turnstileRef.current.innerHTML = "";
+      if (w.turnstile && turnstileRef.current && turnstileRef.current.children.length === 0) {
+        rendered = true;
         w.turnstile.render(turnstileRef.current, {
           sitekey: "0x4AAAAAADI34BpAkqXgFVaA",
           callback: (token: string) => setTurnstileToken(token),
@@ -147,10 +149,7 @@ export default function SubmitPage() {
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      // Try rendering multiple times to ensure it works
       setTimeout(tryRender, 200);
-      setTimeout(tryRender, 600);
-      setTimeout(tryRender, 1200);
     };
     document.head.appendChild(script);
   }, [pageLoading, hasSubmitted, editing]);
