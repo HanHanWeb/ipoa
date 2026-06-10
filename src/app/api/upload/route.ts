@@ -55,13 +55,14 @@ export async function POST(request: Request) {
     const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
     const key = `ipoa/2026/${Date.now()}.${ext}`;
     const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
-    const contentLength = String(fileBuffer.byteLength);
 
     const now = Math.floor(Date.now() / 1000);
     const expire = now + 600;
     const signTime = `${now};${expire}`;
     const signKey = await hmacSha1(secretKey, signTime);
-    const httpString = ["put", `/${key}`, "", `content-length=${contentLength}&host=${host}`, ""].join("\n");
+    // Don't sign any headers — CF Workers' fetch() may auto-add/modify headers
+    // causing signature mismatch. Only sign method + path + params.
+    const httpString = ["put", `/${key}`, "", "", ""].join("\n");
     const sha1edHttpString = await sha1Hex(httpString);
     const stringToSign = ["sha1", signTime, sha1edHttpString, ""].join("\n");
     const signature = await hmacSha1(signKey, stringToSign);
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
       `q-ak=${secretId}`,
       `q-sign-time=${signTime}`,
       `q-key-time=${signTime}`,
-      `q-header-list=content-length;host`,
+      `q-header-list=`,
       `q-url-param-list=`,
       `q-signature=${signature}`,
     ].join("&");
@@ -80,11 +81,7 @@ export async function POST(request: Request) {
 
     const cosRes = await fetch(cosUrl, {
       method: "PUT",
-      headers: {
-        Host: host,
-        "Content-Length": contentLength,
-        Authorization: authorization,
-      },
+      headers: { Authorization: authorization },
       body: fileBuffer,
     });
 
