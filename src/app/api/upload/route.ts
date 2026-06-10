@@ -60,7 +60,8 @@ export async function POST(request: Request) {
     const signKey = await hmacSha1(secretKey, signTime);
     const httpStr = `put\n/${key}\n\nhost=${host}\n`;
     const sha1ed = await sha1Hex(httpStr);
-    const sig = await hmacSha1(signKey, sha1ed);
+    const stringToSign = `sha1\n${signTime}\n${sha1ed}\n`;
+    const sig = await hmacSha1(signKey, stringToSign);
     const auth = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sig}`;
 
     const cosRes = await fetch(`https://${host}/${key}`, {
