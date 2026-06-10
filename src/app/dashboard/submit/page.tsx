@@ -39,6 +39,12 @@ interface Submission {
   description: string;
   image_url: string;
   created_at: string;
+  version: string;
+  completion_date: string;
+  contact: string;
+  os: string;
+  tool: string;
+  source_url: string;
 }
 
 export default function SubmitPage() {
@@ -46,6 +52,12 @@ export default function SubmitPage() {
   const [owner, setOwner] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [version, setVersion] = useState("");
+  const [completionDate, setCompletionDate] = useState("");
+  const [contact, setContact] = useState("");
+  const [os, setOs] = useState("");
+  const [tool, setTool] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -54,6 +66,9 @@ export default function SubmitPage() {
   const [countdown, setCountdown] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const hasSubmitted = submissions.length > 0;
+  const submitted = hasSubmitted ? submissions[0] : null;
 
   const fetchSubmissions = () => {
     fetch("/api/submissions")
@@ -145,7 +160,11 @@ export default function SubmitPage() {
 
   const handleSubmit = async () => {
     if (!workType || !owner.trim() || !title.trim() || !description.trim() || imageUrls.length === 0) {
-      setMessage("请填写所有字段");
+      setMessage("请填写所有必填字段");
+      return;
+    }
+    if ((workType === "临摹" || workType === "改编") && !sourceUrl.trim()) {
+      setMessage("临摹/改编作品请填写原作品出处");
       return;
     }
 
@@ -155,17 +174,23 @@ export default function SubmitPage() {
     const res = await fetch("/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ work_type: workType, owner, title, description, image_urls: imageUrls }),
+      body: JSON.stringify({
+        work_type: workType,
+        owner,
+        title,
+        description,
+        image_urls: imageUrls,
+        version,
+        completion_date: completionDate,
+        contact,
+        os,
+        tool,
+        source_url: sourceUrl,
+      }),
     });
 
     if (res.ok) {
       setMessage("提交成功！");
-      setWorkType("");
-      setOwner("");
-      setTitle("");
-      setDescription("");
-      setImageUrls([]);
-      if (fileRef.current) fileRef.current.value = "";
       fetchSubmissions();
     } else {
       const err = await res.json();
@@ -175,6 +200,107 @@ export default function SubmitPage() {
     setSubmitting(false);
   };
 
+  const needsSourceUrl = workType === "临摹" || workType === "改编";
+
+  // If already submitted, show the submitted data
+  if (submitted) {
+    let urls: string[] = [];
+    try {
+      const parsed = JSON.parse(submitted.image_url);
+      urls = Array.isArray(parsed) ? parsed : [submitted.image_url];
+    } catch {
+      urls = [submitted.image_url];
+    }
+
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-semibold">作品提交</h1>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="size-5" />
+              已提交作品
+            </CardTitle>
+            <CardDescription>您已提交过作品，以下是您提交的信息</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作品类型</label>
+                <p className="mt-1">{submitted.work_type || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作品所有人 / 组织</label>
+                <p className="mt-1">{submitted.owner || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作品名</label>
+                <p className="mt-1">{submitted.title || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作品版本号</label>
+                <p className="mt-1">{submitted.version || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作品完成日期</label>
+                <p className="mt-1">{submitted.completion_date || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作者联系方式</label>
+                <p className="mt-1">{submitted.contact || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">操作系统</label>
+                <p className="mt-1">{submitted.os || "未填写"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">使用工具</label>
+                <p className="mt-1">{submitted.tool || "未填写"}</p>
+              </div>
+              {(submitted.work_type === "临摹" || submitted.work_type === "改编") && (
+                <div className="sm:col-span-2">
+                  <label className="text-sm font-medium text-muted-foreground">原作品出处</label>
+                  <p className="mt-1">
+                    {submitted.source_url ? (
+                      <a href={submitted.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        {submitted.source_url}
+                      </a>
+                    ) : "未填写"}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">作品简介</label>
+              <p className="mt-1">{submitted.description || "未填写"}</p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">作品图片</label>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {urls.map((url: string, i: number) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`作品图片 ${i + 1}`}
+                    className="h-32 w-32 rounded-md border object-cover"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              提交时间：{submitted.created_at ? new Date(submitted.created_at).toLocaleString("zh-CN") : ""}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Submission form
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">作品提交</h1>
@@ -185,11 +311,11 @@ export default function SubmitPage() {
             <Upload className="size-5" />
             提交作品
           </CardTitle>
-          <CardDescription>填写作品信息并上传作品图片</CardDescription>
+          <CardDescription>填写作品信息并上传作品图片（只能提交一次）</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品类型</label>
+            <label className="text-sm font-medium">作品类型 <span className="text-red-500">*</span></label>
             <Select value={workType} onValueChange={(v) => setWorkType(v ?? "")}>
               <SelectTrigger>
                 <SelectValue placeholder="请选择作品类型" />
@@ -197,12 +323,13 @@ export default function SubmitPage() {
               <SelectContent>
                 <SelectItem value="原创">原创</SelectItem>
                 <SelectItem value="临摹">临摹</SelectItem>
+                <SelectItem value="改编">改编</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品所有人 / 组织</label>
+            <label className="text-sm font-medium">作品所有人 / 组织 <span className="text-red-500">*</span></label>
             <Input
               placeholder="请输入个人姓名或组织名称"
               value={owner}
@@ -211,7 +338,7 @@ export default function SubmitPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品名</label>
+            <label className="text-sm font-medium">作品名 <span className="text-red-500">*</span></label>
             <Input
               placeholder="请输入作品名称"
               value={title}
@@ -220,7 +347,7 @@ export default function SubmitPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品简介</label>
+            <label className="text-sm font-medium">作品简介 <span className="text-red-500">*</span></label>
             <Textarea
               placeholder="请简要描述您的作品"
               value={description}
@@ -229,8 +356,66 @@ export default function SubmitPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label className="text-sm font-medium">作品版本号</label>
+            <Input
+              placeholder="例如：v1.0"
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label className="text-sm font-medium">作品完成日期</label>
+            <Input
+              type="date"
+              value={completionDate}
+              onChange={(e) => setCompletionDate(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label className="text-sm font-medium">作者联系方式（QQ / 微信）</label>
+            <Input
+              placeholder="请输入 QQ 号或微信号"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label className="text-sm font-medium">操作系统</label>
+              <Input
+                placeholder="例如：macOS / Windows / iPadOS"
+                value={os}
+                onChange={(e) => setOs(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label className="text-sm font-medium">使用工具</label>
+              <Input
+                placeholder="例如：Keynote / PowerPoint / WPS"
+                value={tool}
+                onChange={(e) => setTool(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {needsSourceUrl && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label className="text-sm font-medium">原作品出处 <span className="text-red-500">*</span></label>
+              <Input
+                placeholder="请输入原作品链接"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+              />
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <div>
-              <label className="text-sm font-medium">作品图片</label>
+              <label className="text-sm font-medium">作品图片 <span className="text-red-500">*</span></label>
               <p className="mt-1 text-xs text-muted-foreground">最多5张，仅支持 PNG / JPG，每张不超过 3MB</p>
             </div>
             <div className="flex items-center gap-3">
@@ -288,7 +473,7 @@ export default function SubmitPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>提交确认</AlertDialogTitle>
                   <AlertDialogDescription>
-                    我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。
+                    我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -308,54 +493,6 @@ export default function SubmitPage() {
           </div>
         </CardContent>
       </Card>
-
-      {submissions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>我的提交</CardTitle>
-            <CardDescription>共 {submissions.length} 件作品</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {submissions.map((sub) => {
-                let urls: string[] = [];
-                try {
-                  const parsed = JSON.parse(sub.image_url);
-                  urls = Array.isArray(parsed) ? parsed : [sub.image_url];
-                } catch {
-                  urls = [sub.image_url];
-                }
-                return (
-                  <div key={sub.id} className="flex gap-4 rounded-lg border p-3">
-                    <div className="flex shrink-0 gap-2">
-                      {urls.map((url: string, i: number) => (
-                        <img
-                          key={i}
-                          src={url}
-                          alt={sub.title}
-                          className="size-20 rounded object-cover"
-                        />
-                      ))}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">{sub.title}</p>
-                      <p className="text-xs text-muted-foreground">{sub.owner} · {sub.work_type || "未分类"}</p>
-                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                        {sub.description}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {sub.created_at
-                          ? new Date(sub.created_at).toLocaleString("zh-CN")
-                          : ""}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

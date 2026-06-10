@@ -16,10 +16,21 @@ async function ensureSubmissionsTable() {
       FOREIGN KEY (user_id) REFERENCES users(casdoor_id)
     )
   `);
-  // Add work_type column if missing
-  try {
-    await getDb().execute("ALTER TABLE submissions ADD COLUMN work_type TEXT NOT NULL DEFAULT ''");
-  } catch {}
+  // Add new columns if missing
+  const alterCols = [
+    ["work_type", "TEXT NOT NULL DEFAULT ''"],
+    ["version", "TEXT NOT NULL DEFAULT ''"],
+    ["completion_date", "TEXT NOT NULL DEFAULT ''"],
+    ["contact", "TEXT NOT NULL DEFAULT ''"],
+    ["os", "TEXT NOT NULL DEFAULT ''"],
+    ["tool", "TEXT NOT NULL DEFAULT ''"],
+    ["source_url", "TEXT NOT NULL DEFAULT ''"],
+  ];
+  for (const [col, def] of alterCols) {
+    try {
+      await getDb().execute(`ALTER TABLE submissions ADD COLUMN ${col} ${def}`);
+    } catch {}
+  }
 }
 
 // Get current user's submissions
@@ -35,7 +46,7 @@ export async function GET() {
     await ensureSubmissionsTable();
 
     const result = await getDb().execute({
-      sql: "SELECT id, work_type, owner, title, description, image_url, created_at FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
+      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_url FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
       args: [userId],
     });
 
@@ -55,10 +66,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
+    // Check if already submitted
+    const existing = await getDb().execute({
+      sql: "SELECT id FROM submissions WHERE user_id = ?",
+      args: [userId],
+    });
+    if (existing.rows.length > 0) {
+      return NextResponse.json({ error: "您已提交过作品，不能重复提交" }, { status: 400 });
+    }
+
     await initDb();
     await ensureSubmissionsTable();
 
-    const { work_type, owner, title, description, image_urls } = await request.json();
+    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url } = await request.json();
     if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
       return NextResponse.json({ error: "所有字段均为必填" }, { status: 400 });
     }
@@ -66,8 +86,8 @@ export async function POST(request: Request) {
     const imageUrl = JSON.stringify(image_urls);
 
     await getDb().execute({
-      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url) VALUES (?, ?, ?, ?, ?, ?)",
-      args: [userId, work_type, owner, title, description, imageUrl],
+      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url, version, completion_date, contact, os, tool, source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [userId, work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_url || ""],
     });
 
     return NextResponse.json({ ok: true });
