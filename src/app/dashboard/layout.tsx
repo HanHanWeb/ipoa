@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -17,8 +18,15 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Home, Upload, Users, ArrowLeft, Shield, Settings } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
@@ -27,7 +35,8 @@ const navItems = [
 ];
 
 const adminItems = [
-  { title: "用户管理", url: "/dashboard/users", icon: Shield },
+  { title: "用户管理", url: "/dashboard/users", icon: UserCog },
+  { title: "公告管理", url: "/dashboard/notices", icon: Megaphone },
   { title: "基础设置", url: "/dashboard/settings", icon: Settings },
 ];
 
@@ -38,19 +47,25 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
-      .then((data) => setIsAdmin(data.user?.role === "admin"));
+      .then((data) => {
+        if (data.user) {
+          setUser(data.user);
+          setIsAdmin(data.user.role === "admin");
+        }
+      });
   }, []);
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="group-data-[collapsible=icon]:hidden">
           <SidebarMenu>
-            <SidebarMenuItem>
+            <SidebarMenuItem className="flex items-center justify-between">
               <SidebarMenuButton size="lg" render={<Link href="/" />}>
                 <img
                   src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
@@ -59,13 +74,19 @@ export default function DashboardLayout({
                   crossOrigin="anonymous"
                 />
               </SidebarMenuButton>
+              <SidebarTrigger className="size-8 shrink-0" />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="group-data-[collapsible=icon]:pt-2">
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
+                <SidebarMenuItem className="hidden group-data-[collapsible=icon]:flex">
+                  <SidebarMenuButton tooltip="展开侧栏">
+                    <SidebarTrigger className="size-4" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton
@@ -101,19 +122,51 @@ export default function DashboardLayout({
             </SidebarGroup>
           )}
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none hover:bg-accent transition-colors" />
+                  }
+                >
+                  {user ? (
+                    <>
+                      <Avatar size="sm" className="after:border-0">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>
+                          {user.name?.charAt(0)?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{user.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <span className="flex-1 text-sm text-muted-foreground">
+                      加载中...
+                    </span>
+                  )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" sideOffset={8} className="min-w-40">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      render={<a href="/api/auth/logout" />}
+                    >
+                      <LogOut data-icon="inline-start" />
+                      退出登录
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="size-4" />
-            返回首页
-          </Link>
-        </header>
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

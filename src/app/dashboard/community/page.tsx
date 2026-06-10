@@ -17,7 +17,7 @@ const links = [
   {
     title: "IPOA 赛事主页",
     description: "查看赛事详情与最新动态",
-    url: "https://intereco.org.cn/d/318",
+    url: "https://ipoa.interever.cn",
     icon: ExternalLink,
   },
 ];
@@ -41,11 +41,11 @@ export default function CommunityPage() {
             <div className="rounded-lg bg-muted p-4">
               <p className="text-sm text-muted-foreground">群号</p>
               <p className="mt-1 text-xl font-semibold tracking-wide">
-                123456789
+                1015280906
               </p>
             </div>
             <p className="text-sm text-muted-foreground">
-              打开 QQ 搜索群号即可加入，与设计师们一起交流学习。
+              打开 QQ 搜索群号即可加入。
             </p>
           </CardContent>
         </Card>

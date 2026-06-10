@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User } from "lucide-react";
+import { Clock, User, Megaphone, Pin } from "lucide-react";
 
 interface UserInfo {
   id: string;
@@ -18,6 +18,14 @@ interface UserInfo {
   email: string;
   avatar: string;
   role: string;
+}
+
+interface Notice {
+  id: number;
+  title: string;
+  content: string;
+  pinned: number;
+  created_at: string;
 }
 
 function useCountdown() {
@@ -60,12 +68,16 @@ function formatDiff(diff: number) {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserInfo | null>(null);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const countdown = useCountdown();
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => setUser(data.user));
+    fetch("/api/notices")
+      .then((res) => res.json())
+      .then((data) => setNotices(data.notices || []));
   }, []);
 
   const time = formatDiff(countdown.diff);
@@ -152,6 +164,42 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Activity Announcements */}
+      {notices.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Megaphone className="size-5" />
+            活动公告
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {notices.map((notice) => (
+              <div
+                key={notice.id}
+                className="rounded-lg border p-3"
+              >
+                <div className="flex items-center gap-2">
+                  {notice.pinned ? (
+                    <Badge variant="default" className="gap-1 shrink-0 text-xs">
+                      <Pin className="size-2.5" />
+                      置顶
+                    </Badge>
+                  ) : null}
+                  <h3 className="truncate text-sm font-medium">{notice.title}</h3>
+                </div>
+                <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
+                  {notice.content}
+                </p>
+                <p className="mt-2 text-[10px] text-muted-foreground">
+                  {notice.created_at
+                    ? new Date(notice.created_at).toLocaleString("zh-CN")
+                    : ""}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
