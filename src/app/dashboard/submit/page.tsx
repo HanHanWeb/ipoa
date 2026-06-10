@@ -115,31 +115,21 @@ export default function SubmitPage() {
       for (const file of toUpload) {
         const res = await fetch("/api/upload", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: file.name }),
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "X-Filename": file.name,
+          },
+          body: await file.arrayBuffer(),
         });
 
         if (!res.ok) {
-          const err = await res.json();
+          const err = await res.json().catch(() => ({ error: "上传失败" }));
           setMessage(err.error || "上传失败");
           setUploading(false);
           return;
         }
 
-        const { uploadUrl, imageUrl } = await res.json();
-
-        const uploadRes = await fetch(uploadUrl, {
-          method: "PUT",
-          body: await file.arrayBuffer(),
-        });
-
-        if (!uploadRes.ok) {
-          const cosErr = await uploadRes.text().catch(() => "");
-          setMessage(`图片上传失败 (${uploadRes.status}) ${cosErr.substring(0, 200)}`);
-          setUploading(false);
-          return;
-        }
-
+        const { imageUrl } = await res.json();
         uploaded.push(imageUrl);
       }
 
