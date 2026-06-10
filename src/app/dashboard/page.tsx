@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
 interface UserInfo {
   id: string;
@@ -175,7 +175,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">加载中...</p>
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
             )}
           </CardContent>
         </Card>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
           <CardContent>
             {countdown.status === "loading" ? (
               <div className="flex h-24 items-center justify-center">
-                <p className="text-muted-foreground">加载中...</p>
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
               </div>
             ) : countdown.status !== "ended" ? (
               <div className="grid grid-cols-4 gap-3 text-center">
