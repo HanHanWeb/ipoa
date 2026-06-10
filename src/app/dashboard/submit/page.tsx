@@ -75,7 +75,6 @@ export default function SubmitPage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [countdown, setCountdown] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
@@ -153,24 +152,6 @@ export default function SubmitPage() {
     };
     document.head.appendChild(script);
   }, [pageLoading, hasSubmitted, editing]);
-
-  useEffect(() => {
-    if (!dialogOpen) {
-      setCountdown(10);
-      return;
-    }
-    setCountdown(10);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [dialogOpen]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -702,10 +683,9 @@ export default function SubmitPage() {
                 <AlertDialogFooter>
                   <AlertDialogCancel>取消</AlertDialogCancel>
                   <AlertDialogAction
-                    disabled={countdown > 0}
                     onClick={handleSubmit}
                   >
-                    {countdown > 0 ? `${countdown} 秒后可确认` : (editing ? "确认保存" : "确认提交")}
+                    {editing ? "确认保存" : "确认提交"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
