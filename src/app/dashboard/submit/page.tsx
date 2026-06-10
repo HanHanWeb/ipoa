@@ -679,7 +679,7 @@ export default function SubmitPage() {
             )}
           </div>
 
-          <div className="flex justify-center py-2">
+          <div className="flex justify-start py-2">
             <div ref={turnstileRef} />
           </div>
 
@@ -687,7 +687,7 @@ export default function SubmitPage() {
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <AlertDialogTrigger
                 render={
-                  <Button disabled={submitting || imageUrls.length === 0} />
+                  <Button disabled={submitting || imageUrls.length === 0 || !turnstileToken} />
                 }
               >
                 <Upload className="mr-1 size-4" />
