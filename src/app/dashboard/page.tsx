@@ -175,7 +175,9 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              </div>
             )}
           </CardContent>
         </Card>
