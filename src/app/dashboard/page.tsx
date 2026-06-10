@@ -103,9 +103,9 @@ function NoticeCard({ notice }: { notice: Notice }) {
           )}
         </Button>
       )}
-      <p className="mt-2 text-[10px] text-muted-foreground">
+      <p className="mt-2 text-xs text-muted-foreground">
         {notice.created_at
-          ? new Date(notice.created_at).toLocaleString("zh-CN")
+          ? new Date(notice.created_at).toLocaleDateString("zh-CN")
           : ""}
       </p>
     </div>
@@ -154,12 +154,9 @@ export default function DashboardPage() {
                     {user.name?.charAt(0)?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="space-y-1">
-                  <p className="text-lg font-medium">{user.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {user.email}
-                  </p>
+                <div>
                   <div className="flex items-center gap-2">
+                    <p className="text-lg font-medium">{user.name}</p>
                     <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
                       {user.role === "admin" ? "管理员" : user.role === "reviewer" ? "审核员" : "参赛者"}
                     </Badge>
@@ -172,11 +169,14 @@ export default function DashboardPage() {
                       </Badge>
                     )}
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    {user.email}
+                  </p>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <div className="flex h-24 items-center justify-center">
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
               </div>
             )}
           </CardContent>
