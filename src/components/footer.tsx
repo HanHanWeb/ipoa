@@ -15,7 +15,6 @@ const footerGroups: FooterGroup[] = [
     links: [
       { label: "关于我们", href: "https://www.intereco.org.cn/about.html", external: true },
       { label: "联系我们", href: "mailto:ipoa@intereco.org.cn", external: true },
-      { label: "QQ 群", href: "https://qm.qq.com/q/zo6rvaWmKk", external: true },
     ],
   },
 ];
