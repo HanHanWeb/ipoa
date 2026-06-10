@@ -227,7 +227,7 @@ export default function DashboardPage() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-4 px-4 md:px-7">
+          <CardContent className="pt-2 pb-4 px-4 md:px-7">
             {countdown.status === "loading" ? (
               <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
                 {[0, 1, 2, 3].map((i) => (
