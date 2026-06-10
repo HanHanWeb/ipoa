@@ -47,8 +47,12 @@ const roleLabels: Record<string, string> = {
 
 const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = {
   admin: "default",
-  reviewer: "outline",
+  reviewer: "default",
   user: "secondary",
+};
+
+const roleBadgeStyle: Record<string, React.CSSProperties | undefined> = {
+  reviewer: { backgroundColor: "#e34b6e" },
 };
 
 export default function UsersPage() {
@@ -133,7 +137,7 @@ export default function UsersPage() {
                     {user.email}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={roleBadgeVariant[user.role] || "secondary"}>
+                    <Badge variant={roleBadgeVariant[user.role] || "secondary"} style={roleBadgeStyle[user.role]}>
                       {roleLabels[user.role] || user.role}
                     </Badge>
                   </TableCell>

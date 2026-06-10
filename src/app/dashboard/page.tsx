@@ -30,8 +30,8 @@ interface Notice {
 
 function useCountdown() {
   const [now, setNow] = useState(new Date());
-  const [eventStart, setEventStart] = useState(new Date("2026-07-01T00:00:00+08:00"));
-  const [eventEnd, setEventEnd] = useState(new Date("2026-08-31T23:59:59+08:00"));
+  const [eventStart, setEventStart] = useState<Date | null>(null);
+  const [eventEnd, setEventEnd] = useState<Date | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -46,6 +46,10 @@ function useCountdown() {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  if (!eventStart || !eventEnd) {
+    return { status: "loading" as const, diff: 0, label: "加载中..." };
+  }
 
   if (now < eventStart) {
     const diff = eventStart.getTime() - now.getTime();
@@ -109,8 +113,8 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     {user.email}
                   </p>
-                  <Badge variant="default">
-                    {user.role === "admin" ? "管理员" : "参赛者"}
+                  <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
+                    {user.role === "admin" ? "管理员" : user.role === "reviewer" ? "审核员" : "参赛者"}
                   </Badge>
                 </div>
               </div>
@@ -128,15 +132,21 @@ export default function DashboardPage() {
               {countdown.label}
             </CardTitle>
             <CardDescription>
-              {countdown.status === "upcoming"
-                ? "PPTOS 创意设计大赛即将开始"
-                : countdown.status === "ongoing"
-                  ? "PPTOS 创意设计大赛进行中"
-                  : "感谢您的参与"}
+              {countdown.status === "loading"
+                ? ""
+                : countdown.status === "upcoming"
+                  ? "PPTOS 创意设计大赛即将开始"
+                  : countdown.status === "ongoing"
+                    ? "PPTOS 创意设计大赛进行中"
+                    : "感谢您的参与"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {countdown.status !== "ended" ? (
+            {countdown.status === "loading" ? (
+              <div className="flex h-24 items-center justify-center">
+                <p className="text-muted-foreground">加载中...</p>
+              </div>
+            ) : countdown.status !== "ended" ? (
               <div className="grid grid-cols-4 gap-3 text-center">
                 {[
                   { value: time.days, label: "天" },
