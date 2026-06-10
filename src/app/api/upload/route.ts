@@ -1,33 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { createHmac, createHash } from "node:crypto";
 
 const COS_BUCKET = "intereco-basic-1305364972";
 const COS_REGION = "ap-nanjing";
-
-function bufToHex(buf: ArrayBuffer): string {
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function hmacSha1(key: string, msg: string): Promise<string> {
-  const enc = new TextEncoder();
-  const cryptoKey = await globalThis.crypto.subtle.importKey(
-    "raw",
-    enc.encode(key),
-    { name: "HMAC", hash: "SHA-1" },
-    false,
-    ["sign"]
-  );
-  const sig = await globalThis.crypto.subtle.sign("HMAC", cryptoKey, enc.encode(msg));
-  return bufToHex(sig);
-}
-
-async function sha1Hex(msg: string): Promise<string> {
-  const enc = new TextEncoder();
-  const hash = await globalThis.crypto.subtle.digest("SHA-1", enc.encode(msg));
-  return bufToHex(hash);
-}
 
 export async function POST(request: Request) {
   try {
@@ -37,8 +13,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const secretId = process.env.COS_SECRET_ID || "";
-    const secretKey = process.env.COS_SECRET_KEY || "";
+    const secretId = (process.env.COS_SECRET_ID || "").trim();
+    const secretKey = (process.env.COS_SECRET_KEY || "").trim();
     if (!secretId || !secretKey) {
       return NextResponse.json({ error: "COS 未配置" }, { status: 500 });
     }
@@ -59,13 +35,12 @@ export async function POST(request: Request) {
     const now = Math.floor(Date.now() / 1000);
     const expire = now + 600;
     const signTime = `${now};${expire}`;
-    const signKey = await hmacSha1(secretKey, signTime);
-    // Don't sign any headers — CF Workers' fetch() may auto-add/modify headers
-    // causing signature mismatch. Only sign method + path + params.
+    const signKey = createHmac("sha1", secretKey).update(signTime).digest("hex");
+
     const httpString = ["put", `/${key}`, "", "", ""].join("\n");
-    const sha1edHttpString = await sha1Hex(httpString);
+    const sha1edHttpString = createHash("sha1").update(httpString).digest("hex");
     const stringToSign = ["sha1", signTime, sha1edHttpString, ""].join("\n");
-    const signature = await hmacSha1(signKey, stringToSign);
+    const signature = createHmac("sha1", signKey).update(stringToSign).digest("hex");
 
     const authorization = [
       `q-sign-algorithm=sha1`,
@@ -79,6 +54,17 @@ export async function POST(request: Request) {
 
     const cosUrl = `https://${host}/${key}`;
 
+    console.log("COS debug:", JSON.stringify({
+      signTime,
+      signKey: signKey.slice(0, 8) + "...",
+      httpString,
+      sha1edHttpString,
+      stringToSign: stringToSign.replace(/\n/g, "\\n"),
+      signature: signature.slice(0, 8) + "...",
+      skLen: secretKey.length,
+      skPrefix: secretKey.slice(0, 4),
+    }));
+
     const cosRes = await fetch(cosUrl, {
       method: "PUT",
       headers: { Authorization: authorization },
@@ -89,7 +75,7 @@ export async function POST(request: Request) {
       const errBody = await cosRes.text();
       console.error("COS upload failed:", cosRes.status, errBody);
       return NextResponse.json(
-        { error: `COS 上传失败 (${cosRes.status})` },
+        { error: `COS 上传失败 (${cosRes.status})`, detail: errBody.slice(0, 500) },
         { status: 500 }
       );
     }
