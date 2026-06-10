@@ -160,18 +160,19 @@ export default function DashboardPage() {
                     <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
                       {user.role === "admin" ? "管理员" : user.role === "reviewer" ? "审核员" : "参赛者"}
                     </Badge>
-                    {hasSubmitted !== null && (
-                      <Badge
-                        variant="default"
-                        style={{ backgroundColor: hasSubmitted ? "#16a34a" : "#e34b6e" }}
-                      >
-                        {hasSubmitted ? "已提交作品" : "未提交作品"}
-                      </Badge>
-                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {user.email}
                   </p>
+                  {hasSubmitted !== null && (
+                    <Badge
+                      variant="default"
+                      className="mt-1"
+                      style={{ backgroundColor: hasSubmitted ? "#16a34a" : "#e34b6e" }}
+                    >
+                      {hasSubmitted ? "已提交作品" : "未提交作品"}
+                    </Badge>
+                  )}
                 </div>
               </div>
             ) : (
