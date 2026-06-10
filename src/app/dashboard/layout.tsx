@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -7,6 +8,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -16,12 +18,17 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { Home, Upload, Users, ArrowLeft } from "lucide-react";
+import { Home, Upload, Users, ArrowLeft, Shield, Settings } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
   { title: "作品提交", url: "/dashboard/submit", icon: Upload },
   { title: "社区联系", url: "/dashboard/community", icon: Users },
+];
+
+const adminItems = [
+  { title: "用户管理", url: "/dashboard/users", icon: Shield },
+  { title: "基础设置", url: "/dashboard/settings", icon: Settings },
 ];
 
 export default function DashboardLayout({
@@ -30,6 +37,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => setIsAdmin(data.user?.role === "admin"));
+  }, []);
 
   return (
     <SidebarProvider>
@@ -66,6 +80,26 @@ export default function DashboardLayout({
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          {isAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>管理</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminItems.map((item) => (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        render={<Link href={item.url} />}
+                        isActive={pathname === item.url}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </SidebarContent>
       </Sidebar>
       <SidebarInset>

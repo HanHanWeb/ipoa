@@ -20,23 +20,31 @@ interface UserInfo {
   role: string;
 }
 
-const EVENT_START = new Date("2026-07-01T00:00:00+08:00");
-const EVENT_END = new Date("2026-08-31T23:59:59+08:00");
-
 function useCountdown() {
   const [now, setNow] = useState(new Date());
+  const [eventStart, setEventStart] = useState(new Date("2026-07-01T00:00:00+08:00"));
+  const [eventEnd, setEventEnd] = useState(new Date("2026-08-31T23:59:59+08:00"));
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.event_start) setEventStart(new Date(data.event_start));
+        if (data.event_end) setEventEnd(new Date(data.event_end));
+      });
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  if (now < EVENT_START) {
-    const diff = EVENT_START.getTime() - now.getTime();
+  if (now < eventStart) {
+    const diff = eventStart.getTime() - now.getTime();
     return { status: "upcoming" as const, diff, label: "距活动开始" };
   }
-  if (now < EVENT_END) {
-    const diff = EVENT_END.getTime() - now.getTime();
+  if (now < eventEnd) {
+    const diff = eventEnd.getTime() - now.getTime();
     return { status: "ongoing" as const, diff, label: "距活动结束" };
   }
   return { status: "ended" as const, diff: 0, label: "活动已结束" };
