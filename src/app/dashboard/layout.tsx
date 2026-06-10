@@ -63,30 +63,25 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="group-data-[collapsible=icon]:hidden">
+        <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem className="flex items-center justify-between">
               <SidebarMenuButton size="lg" render={<Link href="/" />}>
                 <img
                   src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
                   alt="IPOA Logo"
-                  className="h-8 w-auto"
+                  className="h-8 w-auto group-data-[collapsible=icon]:hidden"
                   crossOrigin="anonymous"
                 />
               </SidebarMenuButton>
-              <SidebarTrigger className="size-8 shrink-0" />
+              <SidebarTrigger className="size-8 shrink-0 group-data-[collapsible=icon]:size-6" />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent className="group-data-[collapsible=icon]:pt-2">
+        <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem className="hidden group-data-[collapsible=icon]:flex">
-                  <SidebarMenuButton tooltip="展开侧栏">
-                    <SidebarTrigger className="size-4" />
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton
