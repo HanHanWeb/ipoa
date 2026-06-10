@@ -435,12 +435,13 @@ export default function SubmitPage() {
               <label className="text-sm font-medium text-muted-foreground">作品图片</label>
               <div className="mt-2 flex flex-wrap gap-3">
                 {urls.map((url: string, i: number) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`作品图片 ${i + 1}`}
-                    className="h-32 w-32 rounded-md border object-cover"
-                  />
+                  <a key={i} data-fancybox="submitted" href={url}>
+                    <img
+                      src={url}
+                      alt={`作品图片 ${i + 1}`}
+                      className="h-32 w-32 rounded-md border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                    />
+                  </a>
                 ))}
               </div>
             </div>
