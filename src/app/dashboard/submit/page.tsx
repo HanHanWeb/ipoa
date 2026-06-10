@@ -311,7 +311,6 @@ export default function SubmitPage() {
             <Upload className="size-5" />
             提交作品
           </CardTitle>
-          <CardDescription>填写作品信息并上传作品图片（只能提交一次）</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
