@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
 
 const COS_BUCKET = "intereco-basic-1305364972";
 const COS_REGION = "ap-nanjing";
@@ -12,8 +11,27 @@ function getSecretKey() {
   return process.env.COS_SECRET_KEY || "";
 }
 
-function sign(key: string, msg: string) {
-  return crypto.createHmac("sha1", key).update(msg).digest("hex");
+async function hmacSha1(key: string, msg: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(key),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(msg));
+  return Array.from(new Uint8Array((ArrayBuffer as any) ? sig : sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function sha1(msg: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hash = await crypto.subtle.digest("SHA-1", encoder.encode(msg));
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function POST(request: Request) {
@@ -39,15 +57,15 @@ export async function POST(request: Request) {
     const ext = file.name.split(".").pop() || "jpg";
     const key = `ipoa/2026/${userId}/${Date.now()}.${ext}`;
     const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const fileArrayBuffer = await file.arrayBuffer();
 
     const now = Math.floor(Date.now() / 1000);
     const expire = now + 600;
     const signTime = `${now};${expire}`;
-    const signKey = sign(secretKey, signTime);
+    const signKey = await hmacSha1(secretKey, signTime);
     const httpString = `put\n/${key}\n\nhost=${host}\n`;
-    const sha1edHttpString = crypto.createHash("sha1").update(httpString).digest("hex");
-    const signature = sign(signKey, sha1edHttpString);
+    const sha1edHttpString = await sha1(httpString);
+    const signature = await hmacSha1(signKey, sha1edHttpString);
     const auth = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
     const cosRes = await fetch(`https://${host}/${key}`, {
@@ -57,7 +75,7 @@ export async function POST(request: Request) {
         "Authorization": auth,
         "Content-Type": file.type || "application/octet-stream",
       },
-      body: fileBuffer,
+      body: fileArrayBuffer,
     });
 
     if (!cosRes.ok) {
