@@ -158,7 +158,7 @@ export default function WorksPage() {
                 className="pl-8"
               />
             </div>
-            <Select value={filterType} onValueChange={(v) => setFilterType(v === "all" ? "" : v)}>
+            <Select value={filterType} onValueChange={(v) => setFilterType(!v || v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-32">
                 <SelectValue placeholder="作品类型" />
               </SelectTrigger>
@@ -169,7 +169,7 @@ export default function WorksPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filterOs} onValueChange={(v) => setFilterOs(v === "all" ? "" : v)}>
+            <Select value={filterOs} onValueChange={(v) => setFilterOs(!v || v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-32">
                 <SelectValue placeholder="操作系统" />
               </SelectTrigger>
@@ -180,7 +180,7 @@ export default function WorksPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filterTool} onValueChange={(v) => setFilterTool(v === "all" ? "" : v)}>
+            <Select value={filterTool} onValueChange={(v) => setFilterTool(!v || v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-32">
                 <SelectValue placeholder="使用工具" />
               </SelectTrigger>
