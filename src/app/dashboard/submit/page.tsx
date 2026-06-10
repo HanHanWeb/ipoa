@@ -115,8 +115,13 @@ export default function SubmitPage() {
       .catch(() => {});
   }, []);
 
-  // Load Turnstile script
+  // Load Turnstile script - only when form is visible
   useEffect(() => {
+    // Don't render Turnstile if page is loading or if already submitted (not editing)
+    if (pageLoading || (hasSubmitted && !editing)) {
+      return;
+    }
+
     const scriptId = "turnstile-script";
     
     const tryRender = () => {
@@ -132,7 +137,7 @@ export default function SubmitPage() {
 
     if (document.getElementById(scriptId)) {
       // Script already loaded, try rendering after a short delay
-      setTimeout(tryRender, 100);
+      setTimeout(tryRender, 200);
       return;
     }
 
@@ -143,12 +148,12 @@ export default function SubmitPage() {
     script.defer = true;
     script.onload = () => {
       // Try rendering multiple times to ensure it works
-      setTimeout(tryRender, 100);
-      setTimeout(tryRender, 500);
-      setTimeout(tryRender, 1000);
+      setTimeout(tryRender, 200);
+      setTimeout(tryRender, 600);
+      setTimeout(tryRender, 1200);
     };
     document.head.appendChild(script);
-  }, []);
+  }, [pageLoading, hasSubmitted, editing]);
 
   useEffect(() => {
     if (!dialogOpen) {
