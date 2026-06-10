@@ -621,7 +621,6 @@ export default function SubmitPage() {
               <label className="text-sm font-medium">作品图片 <span className="text-red-500">*</span></label>
               <p className="mt-1 text-xs text-muted-foreground">最多5张，仅支持 PNG / JPG，每张不超过 3MB</p>
             </div>
-            <div ref={turnstileRef} className="flex justify-center" />
 
           <div className="flex items-center gap-3">
               <input
@@ -664,6 +663,10 @@ export default function SubmitPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="flex justify-center py-2">
+            <div ref={turnstileRef} />
           </div>
 
           <div className="flex items-center gap-3">
