@@ -63,7 +63,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <p className="mt-10 text-center text-xs text-slate-400 sm:text-left">
+        <p className="mt-10 text-center text-sm text-slate-400 sm:text-left">
           &copy; {new Date().getFullYear()} 界面生态
         </p>
       </div>
