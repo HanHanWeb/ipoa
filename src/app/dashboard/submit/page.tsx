@@ -125,7 +125,8 @@ export default function SubmitPage() {
         });
 
         if (!uploadRes.ok) {
-          setMessage(`图片上传失败 (${uploadRes.status})`);
+          const cosErr = await uploadRes.text().catch(() => "");
+          setMessage(`图片上传失败 (${uploadRes.status}) ${cosErr.substring(0, 200)}`);
           setUploading(false);
           return;
         }

@@ -1,33 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import COS from "cos-nodejs-sdk-v5";
 
 const COS_BUCKET = "intereco-basic-1305364972";
 const COS_REGION = "ap-nanjing";
-
-function bufToHex(buf: ArrayBuffer): string {
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function hmacSha1(key: string, msg: string): Promise<string> {
-  const enc = new TextEncoder();
-  const cryptoKey = await globalThis.crypto.subtle.importKey(
-    "raw",
-    enc.encode(key),
-    { name: "HMAC", hash: "SHA-1" },
-    false,
-    ["sign"]
-  );
-  const sig = await globalThis.crypto.subtle.sign("HMAC", cryptoKey, enc.encode(msg));
-  return bufToHex(sig);
-}
-
-async function sha1Hex(msg: string): Promise<string> {
-  const enc = new TextEncoder();
-  const hash = await globalThis.crypto.subtle.digest("SHA-1", enc.encode(msg));
-  return bufToHex(hash);
-}
 
 export async function POST(request: Request) {
   try {
@@ -51,20 +27,18 @@ export async function POST(request: Request) {
     const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
     const safeId = userId.replace(/[^a-zA-Z0-9_-]/g, "_");
     const key = `ipoa/2026/${safeId}/${Date.now()}.${ext}`;
-    const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
 
-    const now = Math.floor(Date.now() / 1000);
-    const expire = now + 600;
-    const signTime = `${now};${expire}`;
-    const signKey = await hmacSha1(secretKey, signTime);
-    const httpStr = `put\n/${key}\n\nhost=${host}\n`;
-    const sha1ed = await sha1Hex(httpStr);
-    const stringToSign = `sha1\n${signTime}\n${sha1ed}\n`;
-    const sig = await hmacSha1(signKey, stringToSign);
-    const signStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sig}`;
+    const cos = new COS({ SecretId: secretId, SecretKey: secretKey });
 
-    const uploadUrl = `https://${host}/${key}?${signStr}`;
-    const imageUrl = `https://${host}/${key}`;
+    const uploadUrl = cos.getObjectUrl({
+      Bucket: COS_BUCKET,
+      Region: COS_REGION,
+      Key: key,
+      Method: "PUT",
+      Expires: 600,
+    });
+
+    const imageUrl = `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;
 
     return NextResponse.json({ uploadUrl, imageUrl });
   } catch (err: unknown) {
