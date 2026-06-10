@@ -190,7 +190,7 @@ export default function SubmitPage() {
         <CardContent className="space-y-3">
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label className="text-sm font-medium">作品类型</label>
-            <Select value={workType} onValueChange={setWorkType}>
+            <Select value={workType} onValueChange={(v) => setWorkType(v ?? "")}>
               <SelectTrigger>
                 <SelectValue placeholder="请选择作品类型" />
               </SelectTrigger>
