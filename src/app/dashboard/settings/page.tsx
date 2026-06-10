@@ -26,6 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Save, Calendar as CalendarIcon, ListChecks } from "lucide-react";
+import { PageTitle } from "@/components/page-title";
 
 interface StageDate {
   date: Date | undefined;
@@ -167,6 +168,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="基础设置" />
       <h1 className="text-2xl font-semibold">基础设置</h1>
 
       <Card>

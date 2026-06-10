@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { PageTitle } from "@/components/page-title";
 
 interface WorkDetail {
   id: number;
@@ -193,6 +194,7 @@ export default function WorkDetailPage() {
 
   return (
     <div className="space-y-4">
+      <PageTitle title="作品详情" />
       <Button variant="ghost" onClick={() => router.back()} className="shrink-0">
         <ArrowLeft className="mr-1 size-4" />
         返回

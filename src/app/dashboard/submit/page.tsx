@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageTitle } from "@/components/page-title";
 
 interface Submission {
   id: number;
@@ -238,6 +239,7 @@ export default function SubmitPage() {
 
     return (
       <div className="space-y-6">
+        <PageTitle title="作品提交" />
         <h1 className="text-2xl font-semibold">作品提交</h1>
 
         <Card>
@@ -327,6 +329,7 @@ export default function SubmitPage() {
   // Submission form
   return (
     <div className="space-y-6">
+      <PageTitle title="作品提交" />
       <h1 className="text-2xl font-semibold">作品提交</h1>
 
       <Card>

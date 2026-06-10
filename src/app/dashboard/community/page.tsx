@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Globe, MessageCircle, ExternalLink } from "lucide-react";
+import { PageTitle } from "@/components/page-title";
 
 const links = [
   {
@@ -25,6 +26,7 @@ const links = [
 export default function CommunityPage() {
   return (
     <div className="space-y-6">
+      <PageTitle title="社区联系" />
       <h1 className="text-2xl font-semibold">社区联系</h1>
 
       <div className="grid gap-6 md:grid-cols-2">

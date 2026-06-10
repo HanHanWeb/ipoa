@@ -33,6 +33,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ClipboardList, Eye, Loader2, Search } from "lucide-react";
+import { PageTitle } from "@/components/page-title";
 
 interface WorkItem {
   id: number;
@@ -128,6 +129,7 @@ export default function WorksPage() {
   if (loading) {
     return (
       <div className="space-y-6">
+        <PageTitle title="作品列表" />
         <h1 className="text-2xl font-semibold">作品列表</h1>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -138,6 +140,7 @@ export default function WorksPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="作品列表" />
       <h1 className="text-2xl font-semibold">作品列表</h1>
 
       <Card>

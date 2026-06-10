@@ -23,6 +23,7 @@ import {
 import { Megaphone, Plus, Trash2, Pin, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PageTitle } from "@/components/page-title";
 
 interface Notice {
   id: number;
@@ -80,6 +81,7 @@ export default function NoticesPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="公告管理" />
       <h1 className="text-2xl font-semibold">公告管理</h1>
 
       <Card>

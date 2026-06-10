@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Users, Loader2 } from "lucide-react";
+import { PageTitle } from "@/components/page-title";
 
 interface UserItem {
   id: number;
@@ -89,6 +90,7 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div className="space-y-6">
+        <PageTitle title="用户管理" />
         <h1 className="text-2xl font-semibold">用户管理</h1>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -99,6 +101,7 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="用户管理" />
       <h1 className="text-2xl font-semibold">用户管理</h1>
 
       <Card>

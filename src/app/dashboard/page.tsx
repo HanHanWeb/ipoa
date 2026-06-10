@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp, Loader2, ListChecks, Check } from "lucide-react";
+import { PageTitle } from "@/components/page-title";
 
 interface UserInfo {
   id: string;
@@ -155,6 +156,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="活动首页" />
       <h1 className="text-2xl font-semibold">活动首页</h1>
 
       <div className="grid gap-6 md:grid-cols-2">
