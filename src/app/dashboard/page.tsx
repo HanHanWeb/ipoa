@@ -159,16 +159,16 @@ export default function DashboardPage() {
       <PageTitle title="活动首页" />
       <h1 className="text-2xl font-semibold">活动首页</h1>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* User Info Card */}
-        <Card>
+        <Card data-size="sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="size-5" />
               用户信息
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-4">
+          <CardContent>
             {user ? (
               <div className="flex items-center gap-4">
                 <Avatar className="size-16 after:border-0">
@@ -212,7 +212,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Countdown / Progress Card */}
-        <Card>
+        <Card data-size="sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {countdown.status === "ongoing" ? (
@@ -229,7 +229,7 @@ export default function DashboardPage() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-2 pb-4 px-4 md:px-7">
+          <CardContent>
             {countdown.status === "loading" ? (
               <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
                 {[0, 1, 2, 3].map((i) => (
