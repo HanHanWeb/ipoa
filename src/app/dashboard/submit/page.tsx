@@ -121,8 +121,7 @@ export default function SubmitPage() {
 
         const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
+          body: await file.arrayBuffer(),
         });
 
         if (!uploadRes.ok) {

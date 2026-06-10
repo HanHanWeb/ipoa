@@ -49,7 +49,6 @@ export async function POST(request: Request) {
     }
 
     const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-    const contentType = ext === "png" ? "image/png" : "image/jpeg";
     const safeId = userId.replace(/[^a-zA-Z0-9_-]/g, "_");
     const key = `ipoa/2026/${safeId}/${Date.now()}.${ext}`;
     const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
@@ -58,11 +57,11 @@ export async function POST(request: Request) {
     const expire = now + 600;
     const signTime = `${now};${expire}`;
     const signKey = await hmacSha1(secretKey, signTime);
-    const httpStr = `put\n/${key}\n\ncontent-type=${contentType}&host=${host}\n`;
+    const httpStr = `put\n/${key}\n\nhost=${host}\n`;
     const sha1ed = await sha1Hex(httpStr);
     const stringToSign = `sha1\n${signTime}\n${sha1ed}\n`;
     const sig = await hmacSha1(signKey, stringToSign);
-    const signStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=content-type;host&q-url-param-list=&q-signature=${sig}`;
+    const signStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sig}`;
 
     const uploadUrl = `https://${host}/${key}?${signStr}`;
     const imageUrl = `https://${host}/${key}`;
