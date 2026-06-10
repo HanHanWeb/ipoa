@@ -26,7 +26,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut } from "lucide-react";
+import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
@@ -35,9 +35,14 @@ const navItems = [
 ];
 
 const adminItems = [
+  { title: "作品列表", url: "/dashboard/works", icon: ClipboardList },
   { title: "用户管理", url: "/dashboard/users", icon: UserCog },
   { title: "公告管理", url: "/dashboard/notices", icon: Megaphone },
   { title: "基础设置", url: "/dashboard/settings", icon: Settings },
+];
+
+const reviewerItems = [
+  { title: "作品列表", url: "/dashboard/works", icon: ClipboardList },
 ];
 
 export default function DashboardLayout({
@@ -47,6 +52,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isReviewer, setIsReviewer] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null);
 
   useEffect(() => {
@@ -56,6 +62,7 @@ export default function DashboardLayout({
         if (data.user) {
           setUser(data.user);
           setIsAdmin(data.user.role === "admin");
+          setIsReviewer(data.user.role === "reviewer");
         }
       });
   }, []);
@@ -102,6 +109,26 @@ export default function DashboardLayout({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {adminItems.map((item) => (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        render={<Link href={item.url} />}
+                        isActive={pathname === item.url}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+          {isReviewer && !isAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>审核</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {reviewerItems.map((item) => (
                     <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton
                         render={<Link href={item.url} />}

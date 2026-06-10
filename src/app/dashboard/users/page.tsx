@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,7 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Users } from "lucide-react";
 
 interface UserItem {
   id: number;
@@ -30,7 +36,20 @@ interface UserItem {
   role: string;
   created_at: string;
   last_login: string;
+  has_submitted: number;
 }
+
+const roleLabels: Record<string, string> = {
+  admin: "管理员",
+  reviewer: "审核员",
+  user: "参赛者",
+};
+
+const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = {
+  admin: "default",
+  reviewer: "outline",
+  user: "secondary",
+};
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -54,8 +73,7 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  const toggleRole = async (targetId: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "user" : "admin";
+  const changeRole = async (targetId: string, newRole: string) => {
     await fetch("/api/users", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -92,8 +110,9 @@ export default function UsersPage() {
                 <TableHead>用户</TableHead>
                 <TableHead>邮箱</TableHead>
                 <TableHead>角色</TableHead>
+                <TableHead>已提交作品</TableHead>
                 <TableHead>注册时间</TableHead>
-                <TableHead className="text-right">操作</TableHead>
+                <TableHead>操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -114,29 +133,37 @@ export default function UsersPage() {
                     {user.email}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        user.role === "admin" ? "default" : "secondary"
-                      }
-                    >
-                      {user.role === "admin" ? "管理员" : "参赛者"}
+                    <Badge variant={roleBadgeVariant[user.role] || "secondary"}>
+                      {roleLabels[user.role] || user.role}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.has_submitted ? (
+                      <Badge variant="default" className="bg-green-600">已提交</Badge>
+                    ) : (
+                      <Badge variant="secondary">未提交</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {user.created_at
                       ? new Date(user.created_at).toLocaleDateString("zh-CN")
                       : "-"}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
+                  <TableCell>
+                    <Select
+                      value={user.role}
                       disabled={user.casdoor_id === currentUserId}
-                      onClick={() => toggleRole(user.casdoor_id, user.role)}
+                      onValueChange={(v) => changeRole(user.casdoor_id, v ?? user.role)}
                     >
-                      <Shield className="mr-1 size-3" />
-                      {user.role === "admin" ? "取消管理员" : "设为管理员"}
-                    </Button>
+                      <SelectTrigger className="w-28">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">管理员</SelectItem>
+                        <SelectItem value="reviewer">审核员</SelectItem>
+                        <SelectItem value="user">参赛者</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                 </TableRow>
               ))}

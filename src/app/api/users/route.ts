@@ -13,7 +13,6 @@ export async function GET() {
 
     await initDb();
 
-    // Check admin
     const admin = await getDb().execute({
       sql: "SELECT role FROM users WHERE casdoor_id = ?",
       args: [userId],
@@ -23,7 +22,11 @@ export async function GET() {
     }
 
     const result = await getDb().execute(
-      "SELECT id, casdoor_id, name, email, avatar, role, created_at, last_login FROM users ORDER BY created_at DESC"
+      `SELECT u.id, u.casdoor_id, u.name, u.email, u.avatar, u.role, u.created_at, u.last_login,
+              CASE WHEN s.id IS NOT NULL THEN 1 ELSE 0 END AS has_submitted
+       FROM users u
+       LEFT JOIN submissions s ON s.user_id = u.casdoor_id
+       ORDER BY u.created_at DESC`
     );
 
     return NextResponse.json({ users: result.rows });
@@ -53,11 +56,10 @@ export async function PATCH(request: Request) {
     }
 
     const { targetId, role } = await request.json();
-    if (!targetId || !["admin", "user"].includes(role)) {
+    if (!targetId || !["admin", "user", "reviewer"].includes(role)) {
       return NextResponse.json({ error: "参数错误" }, { status: 400 });
     }
 
-    // Prevent admin from removing their own admin role
     if (targetId === userId && role !== "admin") {
       return NextResponse.json({ error: "不能取消自己的管理员身份" }, { status: 400 });
     }

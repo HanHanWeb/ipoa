@@ -54,17 +54,6 @@ export async function POST(request: Request) {
 
     const cosUrl = `https://${host}/${key}`;
 
-    console.log("COS debug:", JSON.stringify({
-      signTime,
-      signKey: signKey.slice(0, 8) + "...",
-      httpString,
-      sha1edHttpString,
-      stringToSign: stringToSign.replace(/\n/g, "\\n"),
-      signature: signature.slice(0, 8) + "...",
-      skLen: secretKey.length,
-      skPrefix: secretKey.slice(0, 4),
-    }));
-
     const cosRes = await fetch(cosUrl, {
       method: "PUT",
       headers: { Authorization: authorization },
@@ -75,7 +64,7 @@ export async function POST(request: Request) {
       const errBody = await cosRes.text();
       console.error("COS upload failed:", cosRes.status, errBody);
       return NextResponse.json(
-        { error: `COS 上传失败 (${cosRes.status})`, detail: errBody.slice(0, 500) },
+        { error: `COS 上传失败 (${cosRes.status})` },
         { status: 500 }
       );
     }
