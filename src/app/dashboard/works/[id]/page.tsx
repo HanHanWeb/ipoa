@@ -37,6 +37,7 @@ interface WorkDetail {
   os: string;
   tool: string;
   source_url: string;
+  download_url: string;
   user_name: string;
   user_email: string;
   user_avatar: string;
@@ -253,6 +254,20 @@ export default function WorkDetailPage() {
                     className="text-sm text-primary underline"
                   >
                     查看源文件
+                  </a>
+                </div>
+              )}
+
+              {work.download_url && (
+                <div>
+                  <p className="text-sm text-muted-foreground">下载链接</p>
+                  <a
+                    href={work.download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary underline"
+                  >
+                    下载作品
                   </a>
                 </div>
               )}

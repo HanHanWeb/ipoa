@@ -2,6 +2,18 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getDb, initDb } from "@/lib/db";
 
+async function getSetting(key: string, defaultValue: string): Promise<string> {
+  try {
+    const result = await getDb().execute({
+      sql: "SELECT value FROM settings WHERE key = ?",
+      args: [key],
+    });
+    return result.rows.length > 0 ? (result.rows[0].value as string) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
 async function ensureSubmissionsTable() {
   await getDb().execute(`
     CREATE TABLE IF NOT EXISTS submissions (
@@ -25,6 +37,7 @@ async function ensureSubmissionsTable() {
     ["os", "TEXT NOT NULL DEFAULT ''"],
     ["tool", "TEXT NOT NULL DEFAULT ''"],
     ["source_url", "TEXT NOT NULL DEFAULT ''"],
+    ["download_url", "TEXT NOT NULL DEFAULT ''"],
   ];
   for (const [col, def] of alterCols) {
     try {
@@ -46,7 +59,7 @@ export async function GET() {
     await ensureSubmissionsTable();
 
     const result = await getDb().execute({
-      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_url FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
+      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_url, download_url FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
       args: [userId],
     });
 
@@ -78,7 +91,7 @@ export async function POST(request: Request) {
     await initDb();
     await ensureSubmissionsTable();
 
-    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url } = await request.json();
+    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url } = await request.json();
     if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
       return NextResponse.json({ error: "所有字段均为必填" }, { status: 400 });
     }
@@ -86,13 +99,63 @@ export async function POST(request: Request) {
     const imageUrl = JSON.stringify(image_urls);
 
     await getDb().execute({
-      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url, version, completion_date, contact, os, tool, source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      args: [userId, work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_url || ""],
+      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url, version, completion_date, contact, os, tool, source_url, download_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [userId, work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_url || "", download_url || ""],
     });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Create submission error:", err);
+    return NextResponse.json({ error: "服务器错误" }, { status: 500 });
+  }
+}
+
+// Edit submission (before review stage)
+export async function PATCH(request: Request) {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("session_user_id")?.value;
+    if (!userId) {
+      return NextResponse.json({ error: "未登录" }, { status: 401 });
+    }
+
+    // Check if review stage has started
+    await initDb();
+    const stageReviewStart = await getSetting("stage_review_start", "2026-08-15T00:00:00+08:00");
+    const reviewDate = new Date(stageReviewStart);
+    if (!isNaN(reviewDate.getTime()) && new Date() >= reviewDate) {
+      return NextResponse.json({ error: "评审已开始，无法修改作品" }, { status: 400 });
+    }
+
+    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url } = await request.json();
+    if (!submissionId) {
+      return NextResponse.json({ error: "缺少作品ID" }, { status: 400 });
+    }
+
+    // Verify ownership
+    const existing = await getDb().execute({
+      sql: "SELECT id FROM submissions WHERE id = ? AND user_id = ?",
+      args: [submissionId, userId],
+    });
+    if (existing.rows.length === 0) {
+      return NextResponse.json({ error: "作品不存在或无权限修改" }, { status: 403 });
+    }
+
+    if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
+      return NextResponse.json({ error: "所有字段均为必填" }, { status: 400 });
+    }
+
+    const imageUrl = JSON.stringify(image_urls);
+
+    await getDb().execute({
+      sql: `UPDATE submissions SET work_type = ?, owner = ?, title = ?, description = ?, image_url = ?,
+            version = ?, completion_date = ?, contact = ?, os = ?, tool = ?, source_url = ?, download_url = ? WHERE id = ? AND user_id = ?`,
+      args: [work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_url || "", download_url || "", submissionId, userId],
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Edit submission error:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
   }
 }

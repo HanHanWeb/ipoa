@@ -55,6 +55,7 @@ interface Submission {
   os: string;
   tool: string;
   source_url: string;
+  download_url: string;
 }
 
 export default function SubmitPage() {
@@ -76,6 +77,9 @@ export default function SubmitPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [countdown, setCountdown] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const hasSubmitted = submissions.length > 0;
@@ -89,6 +93,19 @@ export default function SubmitPage() {
 
   useEffect(() => {
     fetchSubmissions();
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings) {
+          const now = new Date();
+          const reviewStart = data.settings.review_start_date ? new Date(data.settings.review_start_date) : null;
+          setReviewStageStarted(reviewStart ? now >= reviewStart : false);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -196,30 +213,40 @@ export default function SubmitPage() {
     setSubmitting(true);
     setMessage("");
 
+    const body: Record<string, unknown> = {
+      work_type: workType,
+      owner,
+      title,
+      description,
+      image_urls: imageUrls,
+      version,
+      completion_date: completionDate,
+      contact,
+      os,
+      tool,
+      source_url: sourceUrl,
+      download_url: downloadUrl,
+    };
+
+    if (editing && submitted) {
+      body.submission_id = submitted.id;
+    }
+
     const res = await fetch("/api/submissions", {
-      method: "POST",
+      method: editing ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        work_type: workType,
-        owner,
-        title,
-        description,
-        image_urls: imageUrls,
-        version,
-        completion_date: completionDate,
-        contact,
-        os,
-        tool,
-        source_url: sourceUrl,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (res.ok) {
-      setMessage("提交成功！");
+      setMessage(editing ? "修改成功！" : "提交成功！");
+      if (editing) {
+        setEditing(false);
+      }
       fetchSubmissions();
     } else {
       const err = await res.json();
-      setMessage(err.error || "提交失败");
+      setMessage(err.error || (editing ? "修改失败" : "提交失败"));
     }
 
     setSubmitting(false);
@@ -227,8 +254,8 @@ export default function SubmitPage() {
 
   const needsSourceUrl = workType === "临摹" || workType === "改编";
 
-  // If already submitted, show the submitted data
-  if (submitted) {
+  // If already submitted and not editing, show the submitted data
+  if (submitted && !editing) {
     let urls: string[] = [];
     try {
       const parsed = JSON.parse(submitted.image_url);
@@ -247,6 +274,40 @@ export default function SubmitPage() {
             <CardTitle className="flex items-center gap-2">
               <Upload className="size-5" />
               已提交作品
+              {!reviewStageStarted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto"
+                  onClick={() => {
+                    setEditing(true);
+                    setWorkType(submitted.work_type || "");
+                    setOwner(submitted.owner || "");
+                    setTitle(submitted.title || "");
+                    setDescription(submitted.description || "");
+                    setVersion(submitted.version || "");
+                    setCompletionDate(submitted.completion_date || "");
+                    if (submitted.completion_date) {
+                      setCompletionDateObj(new Date(submitted.completion_date));
+                    }
+                    setContact(submitted.contact || "");
+                    setOs(submitted.os || "");
+                    setTool(submitted.tool || "");
+                    setSourceUrl(submitted.source_url || "");
+                    setDownloadUrl(submitted.download_url || "");
+                    let editUrls: string[] = [];
+                    try {
+                      const parsed = JSON.parse(submitted.image_url);
+                      editUrls = Array.isArray(parsed) ? parsed : [submitted.image_url];
+                    } catch {
+                      editUrls = [submitted.image_url];
+                    }
+                    setImageUrls(editUrls);
+                  }}
+                >
+                  编辑
+                </Button>
+              )}
             </CardTitle>
             <CardDescription>您已提交过作品，以下是您提交的信息</CardDescription>
           </CardHeader>
@@ -303,6 +364,17 @@ export default function SubmitPage() {
               <p className="mt-1">{submitted.description || "未填写"}</p>
             </div>
 
+            {submitted.download_url && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">作品下载链接</label>
+                <p className="mt-1">
+                  <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    {submitted.download_url}
+                  </a>
+                </p>
+              </div>
+            )}
+
             <div>
               <label className="text-sm font-medium text-muted-foreground">作品图片</label>
               <div className="mt-2 flex flex-wrap gap-3">
@@ -336,7 +408,7 @@ export default function SubmitPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="size-5" />
-            提交作品
+            {editing ? "编辑作品" : "提交作品"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -389,6 +461,15 @@ export default function SubmitPage() {
               placeholder="请简要描述您的作品"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label className="text-sm font-medium">作品下载链接</label>
+            <Input
+              placeholder="请输入作品下载链接（选填）"
+              value={downloadUrl}
+              onChange={(e) => setDownloadUrl(e.target.value)}
             />
           </div>
 
@@ -529,13 +610,13 @@ export default function SubmitPage() {
                 }
               >
                 <Upload className="mr-1 size-4" />
-                {submitting ? "提交中..." : "提交作品"}
+                {editing ? (submitting ? "保存中..." : "保存修改") : (submitting ? "提交中..." : "提交作品")}
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>提交确认</AlertDialogTitle>
+                  <AlertDialogTitle>{editing ? "保存确认" : "提交确认"}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。
+                    {editing ? "确认保存修改后的内容？" : "我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。"}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -544,7 +625,7 @@ export default function SubmitPage() {
                     disabled={countdown > 0}
                     onClick={handleSubmit}
                   >
-                    {countdown > 0 ? `${countdown} 秒后可确认` : "确认提交"}
+                    {countdown > 0 ? `${countdown} 秒后可确认` : (editing ? "确认保存" : "确认提交")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
