@@ -187,7 +187,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     {user.email}
                   </p>
-                  {hasSubmitted !== null && (
+                  {hasSubmitted !== null ? (
                     <Badge
                       variant="default"
                       className="mt-1"
@@ -195,6 +195,8 @@ export default function DashboardPage() {
                     >
                       {hasSubmitted ? "已提交作品" : "未提交作品"}
                     </Badge>
+                  ) : (
+                    <div className="mt-1 h-5 w-20 rounded-full bg-muted animate-pulse" />
                   )}
                 </div>
               </div>

@@ -80,6 +80,9 @@ export default function SubmitPage() {
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
+  const turnstileRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const hasSubmitted = submissions.length > 0;
@@ -88,7 +91,11 @@ export default function SubmitPage() {
   const fetchSubmissions = () => {
     fetch("/api/submissions")
       .then((res) => res.json())
-      .then((data) => setSubmissions(data.submissions || []));
+      .then((data) => {
+        setSubmissions(data.submissions || []);
+        setPageLoading(false);
+      })
+      .catch(() => setPageLoading(false));
   };
 
   useEffect(() => {
@@ -107,6 +114,32 @@ export default function SubmitPage() {
       })
       .catch(() => {});
   }, []);
+
+  // Load Turnstile script
+  useEffect(() => {
+    if (document.getElementById("turnstile-script")) {
+      renderTurnstile();
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "turnstile-script";
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => renderTurnstile();
+    document.head.appendChild(script);
+  }, []);
+
+  const renderTurnstile = () => {
+    const w = window as unknown as { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => void } };
+    if (w.turnstile && turnstileRef.current) {
+      turnstileRef.current.innerHTML = "";
+      w.turnstile.render(turnstileRef.current, {
+        sitekey: "0x4AAAAAADI34BpAkqXgFVaA",
+        callback: (token: string) => setTurnstileToken(token),
+      });
+    }
+  };
 
   useEffect(() => {
     if (!dialogOpen) {
@@ -201,7 +234,7 @@ export default function SubmitPage() {
   };
 
   const handleSubmit = async () => {
-    if (!workType || !owner.trim() || !title.trim() || !description.trim() || !version.trim() || !completionDate || !contact.trim() || !os.trim() || !tool.trim() || imageUrls.length === 0) {
+    if (!workType || !owner.trim() || !title.trim() || !description.trim() || !version.trim() || !completionDate || !contact.trim() || !os.trim() || !tool.trim() || imageUrls.length === 0 || !downloadUrl.trim()) {
       setMessage("请填写所有必填字段");
       return;
     }
@@ -212,6 +245,12 @@ export default function SubmitPage() {
 
     setSubmitting(true);
     setMessage("");
+
+    if (!turnstileToken) {
+      setMessage("请完成人机验证");
+      setSubmitting(false);
+      return;
+    }
 
     const body: Record<string, unknown> = {
       work_type: workType,
@@ -226,6 +265,7 @@ export default function SubmitPage() {
       tool,
       source_url: sourceUrl,
       download_url: downloadUrl,
+      turnstile_token: turnstileToken,
     };
 
     if (editing && submitted) {
@@ -255,6 +295,28 @@ export default function SubmitPage() {
   const needsSourceUrl = workType === "临摹" || workType === "改编";
 
   // If already submitted and not editing, show the submitted data
+  if (pageLoading) {
+    return (
+      <div className="space-y-6">
+        <PageTitle title="作品提交" />
+        <h1 className="text-2xl font-semibold">作品提交</h1>
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-32 rounded bg-muted animate-pulse" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 w-20 rounded bg-muted animate-pulse" />
+                <div className="h-10 w-full rounded bg-muted animate-pulse" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (submitted && !editing) {
     let urls: string[] = [];
     try {
@@ -465,9 +527,9 @@ export default function SubmitPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品下载链接</label>
+            <label className="text-sm font-medium">作品下载链接 <span className="text-red-500">*</span></label>
             <Input
-              placeholder="请输入作品下载链接（选填）"
+              placeholder="请输入作品下载链接"
               value={downloadUrl}
               onChange={(e) => setDownloadUrl(e.target.value)}
             />
@@ -559,7 +621,9 @@ export default function SubmitPage() {
               <label className="text-sm font-medium">作品图片 <span className="text-red-500">*</span></label>
               <p className="mt-1 text-xs text-muted-foreground">最多5张，仅支持 PNG / JPG，每张不超过 3MB</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div ref={turnstileRef} className="flex justify-center" />
+
+          <div className="flex items-center gap-3">
               <input
                 ref={fileRef}
                 type="file"

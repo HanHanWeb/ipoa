@@ -14,6 +14,20 @@ async function getSetting(key: string, defaultValue: string): Promise<string> {
   }
 }
 
+async function verifyTurnstile(token: string): Promise<boolean> {
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=0x4AAAAAADI34MMTY7EqbA2sxPch9SC_26k&response=${token}`,
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
+
 async function ensureSubmissionsTable() {
   await getDb().execute(`
     CREATE TABLE IF NOT EXISTS submissions (
@@ -91,8 +105,14 @@ export async function POST(request: Request) {
     await initDb();
     await ensureSubmissionsTable();
 
-    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url } = await request.json();
-    if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
+    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url, turnstile_token } = await request.json();
+
+    // Verify Turnstile
+    if (!turnstile_token || !(await verifyTurnstile(turnstile_token))) {
+      return NextResponse.json({ error: "人机验证失败" }, { status: 400 });
+    }
+
+    if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0 || !download_url) {
       return NextResponse.json({ error: "所有字段均为必填" }, { status: 400 });
     }
 
@@ -127,7 +147,13 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "评审已开始，无法修改作品" }, { status: 400 });
     }
 
-    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url } = await request.json();
+    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url, turnstile_token } = await request.json();
+
+    // Verify Turnstile
+    if (!turnstile_token || !(await verifyTurnstile(turnstile_token))) {
+      return NextResponse.json({ error: "人机验证失败" }, { status: 400 });
+    }
+
     if (!submissionId) {
       return NextResponse.json({ error: "缺少作品ID" }, { status: 400 });
     }
