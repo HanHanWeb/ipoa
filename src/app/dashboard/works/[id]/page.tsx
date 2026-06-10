@@ -175,8 +175,23 @@ export default function WorkDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="space-y-4">
+        <div className="h-8 w-32 rounded bg-muted animate-pulse" />
+        <div className="h-7 w-48 rounded bg-muted animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <div className="aspect-video w-full rounded-lg bg-muted animate-pulse" />
+            <div className="grid grid-cols-2 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+                  <div className="h-5 w-24 rounded bg-muted animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="h-64 rounded-lg border bg-muted/50 animate-pulse" />
+        </div>
       </div>
     );
   }
@@ -314,8 +329,16 @@ export default function WorkDetailPage() {
               </CardHeader>
               <CardContent className="space-y-5">
                 {scoreLoading ? (
-                  <div className="flex h-24 items-center justify-center">
-                    <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                        <div className="size-6 rounded-full bg-muted animate-pulse" />
+                        <div className="flex-1 space-y-1">
+                          <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+                        </div>
+                        <div className="h-5 w-8 rounded bg-muted animate-pulse" />
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <>

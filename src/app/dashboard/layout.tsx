@@ -168,9 +168,13 @@ export default function DashboardLayout({
                       <MoreHorizontal className="size-4 text-muted-foreground group-data-[collapsible=icon]:hidden" />
                     </>
                   ) : (
-                    <span className="flex flex-1 items-center justify-center">
-                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                    </span>
+                    <>
+                      <div className="size-7 rounded-full bg-muted animate-pulse" />
+                      <div className="flex-1 space-y-1 group-data-[collapsible=icon]:hidden">
+                        <div className="h-3.5 w-16 rounded bg-muted animate-pulse" />
+                        <div className="h-3 w-24 rounded bg-muted animate-pulse" />
+                      </div>
+                    </>
                   )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="top" sideOffset={8} className="min-w-40">

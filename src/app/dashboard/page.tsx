@@ -223,7 +223,7 @@ export default function DashboardPage() {
                 <Clock className="size-5" />
               )}
               {countdown.status === "loading" ? (
-                <Loader2 className="size-5 animate-spin" />
+                <div className="h-5 w-20 rounded bg-muted animate-pulse" />
               ) : countdown.status === "ongoing" ? (
                 "活动进度"
               ) : (
@@ -336,8 +336,14 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="min-h-24">
           {!noticesLoaded ? (
-            <div className="flex h-24 items-center justify-center">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-lg border p-4 space-y-2">
+                  <div className="h-5 w-3/4 rounded bg-muted animate-pulse" />
+                  <div className="h-4 w-1/2 rounded bg-muted animate-pulse" />
+                  <div className="h-3 w-1/4 rounded bg-muted animate-pulse" />
+                </div>
+              ))}
             </div>
           ) : notices.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

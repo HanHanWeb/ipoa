@@ -131,8 +131,11 @@ export default function WorksPage() {
       <div className="space-y-6">
         <PageTitle title="作品列表" />
         <h1 className="text-2xl font-semibold">作品列表</h1>
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        <div className="space-y-3">
+          <div className="h-10 w-full rounded bg-muted animate-pulse" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-12 w-full rounded bg-muted animate-pulse" />
+          ))}
         </div>
       </div>
     );
@@ -267,8 +270,13 @@ export default function WorksPage() {
             <DialogTitle>评分状态：{scoreDialogWork?.title}</DialogTitle>
           </DialogHeader>
           {scoreDialogLoading ? (
-            <div className="flex h-24 items-center justify-center">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            <div className="flex flex-wrap gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <div className="size-10 rounded-full bg-muted animate-pulse" />
+                  <div className="h-3 w-8 rounded bg-muted animate-pulse" />
+                </div>
+              ))}
             </div>
           ) : dialogReviewers.length === 0 ? (
             <p className="text-sm text-muted-foreground">暂无评委</p>

@@ -135,8 +135,11 @@ export default function NoticesPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+              <div className="h-10 w-full rounded bg-muted animate-pulse" />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-12 w-full rounded bg-muted animate-pulse" />
+              ))}
             </div>
           ) : notices.length === 0 ? (
             <p className="text-muted-foreground">暂无公告</p>

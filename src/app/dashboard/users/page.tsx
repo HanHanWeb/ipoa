@@ -92,8 +92,11 @@ export default function UsersPage() {
       <div className="space-y-6">
         <PageTitle title="用户管理" />
         <h1 className="text-2xl font-semibold">用户管理</h1>
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        <div className="space-y-3">
+          <div className="h-10 w-full rounded bg-muted animate-pulse" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-12 w-full rounded bg-muted animate-pulse" />
+          ))}
         </div>
       </div>
     );
