@@ -282,7 +282,7 @@ export default function SubmitPage() {
     };
 
     if (editing && submitted) {
-      body.submission_id = submitted.id;
+      body.submissionId = submitted.id;
     }
 
     const res = await fetch("/api/submissions", {
