@@ -26,7 +26,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2 } from "lucide-react";
+import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2, MoreHorizontal } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
@@ -165,6 +165,7 @@ export default function DashboardLayout({
                         <p className="truncate text-sm font-medium">{user.name}</p>
                         <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                       </div>
+                      <MoreHorizontal className="size-4 text-muted-foreground group-data-[collapsible=icon]:hidden" />
                     </>
                   ) : (
                     <span className="flex flex-1 items-center justify-center">
