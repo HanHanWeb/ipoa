@@ -25,8 +25,7 @@ export async function POST(request: Request) {
     }
 
     const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-    const safeId = userId.replace(/[^a-zA-Z0-9_-]/g, "_");
-    const key = `ipoa/2026/${safeId}/${Date.now()}.${ext}`;
+    const key = `ipoa/2026/${Date.now()}.${ext}`;
 
     const cos = new COS({ SecretId: secretId, SecretKey: secretKey });
 
