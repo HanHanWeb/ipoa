@@ -72,16 +72,16 @@ export default function DashboardLayout({
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <SidebarMenu>
-            <SidebarMenuItem className="flex items-center justify-between">
-              <SidebarMenuButton size="lg" render={<Link href="/" />}>
+            <SidebarMenuItem className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
+              <SidebarMenuButton size="lg" render={<Link href="/" />} className="group-data-[collapsible=icon]:hidden">
                 <img
                   src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
                   alt="IPOA Logo"
-                  className="h-8 w-auto group-data-[collapsible=icon]:hidden"
+                  className="h-8 w-auto"
                   crossOrigin="anonymous"
                 />
               </SidebarMenuButton>
-              <SidebarTrigger className="size-8 shrink-0 group-data-[collapsible=icon]:size-6" />
+              <SidebarTrigger className="size-8 shrink-0 group-data-[collapsible=icon]:size-8" />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
@@ -125,7 +125,7 @@ export default function DashboardLayout({
           )}
           {isReviewer && !isAdmin && (
             <SidebarGroup>
-              <SidebarGroupLabel>审核</SidebarGroupLabel>
+              <SidebarGroupLabel>评委</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {reviewerItems.map((item) => (
@@ -150,7 +150,7 @@ export default function DashboardLayout({
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <button className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none hover:bg-accent transition-colors" />
+                    <button className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none hover:bg-accent transition-colors group-data-[collapsible=icon]:justify-center" />
                   }
                 >
                   {user ? (
@@ -161,7 +161,7 @@ export default function DashboardLayout({
                           {user.name?.charAt(0)?.toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
                         <p className="truncate text-sm font-medium">{user.name}</p>
                         <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                       </div>
@@ -189,7 +189,16 @@ export default function DashboardLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <header className="flex items-center gap-2 border-b px-4 py-2 md:hidden">
+          <SidebarTrigger />
+          <img
+            src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
+            alt="IPOA Logo"
+            className="h-6 w-auto"
+            crossOrigin="anonymous"
+          />
+        </header>
+        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

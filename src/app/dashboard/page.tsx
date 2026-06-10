@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp, Loader2, ListChecks, Check } from "lucide-react";
 
 interface UserInfo {
   id: string;
@@ -32,14 +32,15 @@ interface Notice {
 function useCountdown() {
   const [now, setNow] = useState(new Date());
   const [eventStart, setEventStart] = useState<Date | null>(null);
-  const [eventEnd, setEventEnd] = useState<Date | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
       .then((res) => res.json())
       .then((data) => {
-        if (data.event_start) setEventStart(new Date(data.event_start));
-        if (data.event_end) setEventEnd(new Date(data.event_end));
+        if (data.stage_upload_start) {
+          const d = new Date(data.stage_upload_start);
+          if (!isNaN(d.getTime())) setEventStart(d);
+        }
       });
   }, []);
 
@@ -48,7 +49,7 @@ function useCountdown() {
     return () => clearInterval(timer);
   }, []);
 
-  if (!eventStart || !eventEnd) {
+  if (!eventStart) {
     return { status: "loading" as const, diff: 0, label: "加载中..." };
   }
 
@@ -56,11 +57,7 @@ function useCountdown() {
     const diff = eventStart.getTime() - now.getTime();
     return { status: "upcoming" as const, diff, label: "距活动开始" };
   }
-  if (now < eventEnd) {
-    const diff = eventEnd.getTime() - now.getTime();
-    return { status: "ongoing" as const, diff, label: "距活动结束" };
-  }
-  return { status: "ended" as const, diff: 0, label: "活动已结束" };
+  return { status: "ongoing" as const, diff: 0, label: "活动进行中" };
 }
 
 function formatDiff(diff: number) {
@@ -116,6 +113,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState<boolean | null>(null);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [noticesLoaded, setNoticesLoaded] = useState(false);
+  const [stages, setStages] = useState<{ label: string; start: Date }[]>([]);
   const countdown = useCountdown();
 
   useEffect(() => {
@@ -127,7 +126,29 @@ export default function DashboardPage() {
       .then((data) => setHasSubmitted((data.submissions || []).length > 0));
     fetch("/api/notices")
       .then((res) => res.json())
-      .then((data) => setNotices(data.notices || []));
+      .then((data) => {
+        setNotices(data.notices || []);
+        setNoticesLoaded(true);
+      });
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        const stageList = [
+          { label: "作品提交", key: "stage_upload_start" },
+          { label: "作品评审", key: "stage_review_start" },
+          { label: "结果公布", key: "stage_result_start" },
+        ];
+        const parsed = stageList
+          .map((s) => {
+            const val = data[s.key];
+            if (!val) return null;
+            const d = new Date(val);
+            if (isNaN(d.getTime())) return null;
+            return { label: s.label, start: d };
+          })
+          .filter(Boolean) as { label: string; start: Date }[];
+        setStages(parsed);
+      });
   }, []);
 
   const time = formatDiff(countdown.diff);
@@ -145,7 +166,7 @@ export default function DashboardPage() {
               用户信息
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="py-4 min-h-[96px]">
             {user ? (
               <div className="flex items-center gap-4">
                 <Avatar className="size-16 after:border-0">
@@ -158,7 +179,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <p className="text-lg font-medium">{user.name}</p>
                     <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
-                      {user.role === "admin" ? "管理员" : user.role === "reviewer" ? "审核员" : "参赛者"}
+                      {user.role === "admin" ? "管理" : user.role === "reviewer" ? "评委" : "参赛"}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -183,42 +204,39 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Countdown Card */}
+        {/* Countdown / Progress Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="size-5" />
+              {countdown.status === "ongoing" ? (
+                <ListChecks className="size-5" />
+              ) : (
+                <Clock className="size-5" />
+              )}
               {countdown.status === "loading" ? (
                 <Loader2 className="size-5 animate-spin" />
+              ) : countdown.status === "ongoing" ? (
+                "活动进度"
               ) : (
                 countdown.label
               )}
             </CardTitle>
-            <CardDescription>
-              {countdown.status === "loading"
-                ? ""
-                : countdown.status === "upcoming"
-                  ? "PPTOS 创意设计大赛即将开始"
-                  : countdown.status === "ongoing"
-                    ? "PPTOS 创意设计大赛进行中"
-                    : "感谢您的参与"}
-            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="py-4 px-4 md:px-7 min-h-[96px]">
             {countdown.status === "loading" ? (
               <div className="flex h-24 items-center justify-center">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
               </div>
-            ) : countdown.status !== "ended" ? (
-              <div className="grid grid-cols-4 gap-3 text-center">
+            ) : countdown.status === "upcoming" ? (
+              <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
                 {[
                   { value: time.days, label: "天" },
                   { value: time.hours, label: "时" },
                   { value: time.minutes, label: "分" },
                   { value: time.seconds, label: "秒" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-lg bg-muted p-3">
-                    <div className="text-3xl font-bold tabular-nums">
+                  <div key={item.label} className="rounded-lg bg-muted p-2 md:p-3">
+                    <div className={`text-2xl md:text-3xl tabular-nums ${item.label === "天" ? "font-bold text-primary" : "font-medium"}`}>
                       {String(item.value).padStart(2, "0")}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
@@ -227,11 +245,67 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
+            ) : stages.length > 0 ? (
+              <div className="flex items-center gap-1.5">
+                {stages.map((stage, i) => {
+                  const now = new Date();
+                  const isLast = i === stages.length - 1;
+                  const nextStart = !isLast ? stages[i + 1].start : null;
+                  const isActive = now >= stage.start && (isLast || (nextStart && now < nextStart));
+                  const isCompleted = !isLast && nextStart ? now >= nextStart : false;
+                  const isFuture = now < stage.start;
+
+                  let barPercent = 0;
+                  if (nextStart) {
+                    if (isCompleted) {
+                      barPercent = 100;
+                    } else if (isActive) {
+                      const total = nextStart.getTime() - stage.start.getTime();
+                      const elapsed = now.getTime() - stage.start.getTime();
+                      barPercent = total > 0 ? Math.min(100, Math.max(0, (elapsed / total) * 100)) : 0;
+                    }
+                  }
+
+                  return (
+                    <div key={stage.label} className={`flex items-center ${isLast ? "" : "flex-1"}`}>
+                      <div className="flex flex-col items-center gap-1.5 shrink-0">
+                        <div
+                          className={`flex size-8 items-center justify-center rounded-full text-xs font-medium ${
+                            isCompleted
+                              ? "bg-primary text-primary-foreground"
+                              : isActive
+                                ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
+                                : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {isCompleted ? <Check className="size-4" /> : i + 1}
+                        </div>
+                        <span
+                          className={`text-xs font-medium whitespace-nowrap ${
+                            isActive ? "text-primary" : isFuture ? "text-muted-foreground" : "text-foreground"
+                          }`}
+                        >
+                          {stage.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {stage.start.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}
+                        </span>
+                      </div>
+                      {i < stages.length - 1 && (
+                        <div className="mx-2 h-1 flex-1 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{ width: `${barPercent}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="flex h-24 items-center justify-center">
-                <p className="text-lg text-muted-foreground">
-                  活动已结束，感谢您的参与！
-                </p>
+                <p className="text-lg text-muted-foreground">活动进行中</p>
               </div>
             )}
           </CardContent>
@@ -239,19 +313,31 @@ export default function DashboardPage() {
       </div>
 
       {/* Activity Announcements */}
-      {notices.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Megaphone className="size-5" />
             活动公告
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {notices.map((notice) => (
-              <NoticeCard key={notice.id} notice={notice} />
-            ))}
-          </div>
-        </div>
-      )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="min-h-24">
+          {!noticesLoaded ? (
+            <div className="flex h-24 items-center justify-center">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : notices.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {notices.map((notice) => (
+                <NoticeCard key={notice.id} notice={notice} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-24 items-center justify-center">
+              <p className="text-sm text-muted-foreground">暂无公告</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

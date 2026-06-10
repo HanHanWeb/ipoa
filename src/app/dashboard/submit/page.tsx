@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { format } from "date-fns";
+import { zhCN } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Card,
   CardContent,
@@ -22,7 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Upload, ImagePlus, X } from "lucide-react";
+import { Upload, ImagePlus, X, Calendar as CalendarIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -54,6 +63,7 @@ export default function SubmitPage() {
   const [description, setDescription] = useState("");
   const [version, setVersion] = useState("");
   const [completionDate, setCompletionDate] = useState("");
+  const [completionDateObj, setCompletionDateObj] = useState<Date | undefined>();
   const [contact, setContact] = useState("");
   const [os, setOs] = useState("");
   const [tool, setTool] = useState("");
@@ -113,11 +123,12 @@ export default function SubmitPage() {
 
     for (const file of toUpload) {
       if (!["image/png", "image/jpeg"].includes(file.type)) {
-        setMessage("仅支持 PNG / JPG 格式");
+        setMessage(`"${file.name}" 格式不支持，仅支持 PNG / JPG`);
         return;
       }
       if (file.size > maxSize) {
-        setMessage(`"${file.name}" 超过 3MB 限制`);
+        const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+        setMessage(`"${file.name}" 大小为 ${sizeMB}MB，超过 3MB 限制`);
         return;
       }
     }
@@ -128,18 +139,31 @@ export default function SubmitPage() {
     try {
       const uploaded: string[] = [];
       for (const file of toUpload) {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/octet-stream",
-            "X-Filename": file.name,
-          },
-          body: await file.arrayBuffer(),
-        });
+        let res: Response;
+        try {
+          res = await fetch("/api/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/octet-stream",
+              "X-Filename": file.name,
+            },
+            body: await file.arrayBuffer(),
+          });
+        } catch (fetchErr) {
+          setMessage(`网络错误，请检查网络连接后重试`);
+          setUploading(false);
+          return;
+        }
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({ error: "上传失败" }));
-          setMessage(err.error || "上传失败");
+          let errMsg = "上传失败";
+          try {
+            const err = await res.json();
+            errMsg = err.error || `服务器返回错误 (${res.status})`;
+          } catch {
+            errMsg = `服务器返回错误 (${res.status})`;
+          }
+          setMessage(`"${file.name}" ${errMsg}`);
           setUploading(false);
           return;
         }
@@ -150,8 +174,8 @@ export default function SubmitPage() {
 
       setImageUrls((prev) => [...prev, ...uploaded]);
       setMessage(`成功上传 ${uploaded.length} 张图片`);
-    } catch {
-      setMessage("上传出错");
+    } catch (err) {
+      setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}`);
     }
 
     setUploading(false);
@@ -375,14 +399,37 @@ export default function SubmitPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品完成日期 <span className="text-red-500">*</span></label>
-            <Input
-              type="date"
-              min="2000-01-01"
-              max="2099-12-31"
-              value={completionDate}
-              onChange={(e) => setCompletionDate(e.target.value)}
-            />
+            <Label className="text-sm font-medium">作品完成日期 <span className="text-red-500">*</span></Label>
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    data-empty={!completionDateObj}
+                    className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
+                  />
+                }
+              >
+                <CalendarIcon />
+                {completionDateObj && !isNaN(completionDateObj.getTime())
+                  ? format(completionDateObj, "PPP", { locale: zhCN })
+                  : "选择日期"}
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={completionDateObj}
+                  onSelect={(date) => {
+                    setCompletionDateObj(date);
+                    if (date) {
+                      setCompletionDate(format(date, "yyyy-MM-dd"));
+                    }
+                  }}
+                  locale={zhCN}
+                  disabled={(date) => date < new Date("2000-01-01") || date > new Date("2099-12-31")}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -396,21 +443,30 @@ export default function SubmitPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium">操作系统 <span className="text-red-500">*</span></label>
-              <Input
-                placeholder="macOS / Windows"
-                value={os}
-                onChange={(e) => setOs(e.target.value)}
-              />
+              <Label className="text-sm font-medium">操作系统 <span className="text-red-500">*</span></Label>
+              <Select value={os} onValueChange={(v) => v && setOs(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择操作系统" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="macOS">macOS</SelectItem>
+                  <SelectItem value="Windows">Windows</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium">使用工具 <span className="text-red-500">*</span></label>
-              <Input
-                placeholder="Keynote / PowerPoint / WPS"
-                value={tool}
-                onChange={(e) => setTool(e.target.value)}
-              />
+              <Label className="text-sm font-medium">使用工具 <span className="text-red-500">*</span></Label>
+              <Select value={tool} onValueChange={(v) => v && setTool(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择使用工具" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Keynote">Keynote</SelectItem>
+                  <SelectItem value="PowerPoint">PowerPoint</SelectItem>
+                  <SelectItem value="WPS">WPS</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -442,11 +498,13 @@ export default function SubmitPage() {
               <div className="flex flex-wrap gap-3">
                 {imageUrls.map((url, i) => (
                   <div key={i} className="relative">
-                    <img
-                      src={url}
-                      alt={`作品图片 ${i + 1}`}
-                      className="h-32 w-32 rounded-md border object-cover"
-                    />
+                    <a data-fancybox="upload" href={url}>
+                      <img
+                        src={url}
+                        alt={`作品图片 ${i + 1}`}
+                        className="h-32 w-32 rounded-md border object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      />
+                    </a>
                     <button
                       type="button"
                       className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"

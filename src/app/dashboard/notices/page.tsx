@@ -21,6 +21,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Megaphone, Plus, Trash2, Pin, Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Notice {
   id: number;
@@ -106,15 +108,13 @@ export default function NoticesPage() {
             />
           </div>
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+            <Label className="flex items-center gap-2 text-sm">
+              <Checkbox
                 checked={pinned}
-                onChange={(e) => setPinned(e.target.checked)}
-                className="size-4"
+                onCheckedChange={(checked) => setPinned(checked === true)}
               />
               置顶
-            </label>
+            </Label>
             <Button onClick={handleCreate} disabled={submitting}>
               <Megaphone className="mr-1 size-4" />
               {submitting ? "发布中..." : "发布"}
@@ -139,6 +139,7 @@ export default function NoticesPage() {
           ) : notices.length === 0 ? (
             <p className="text-muted-foreground">暂无公告</p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -183,6 +184,7 @@ export default function NoticesPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

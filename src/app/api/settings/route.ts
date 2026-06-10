@@ -33,8 +33,17 @@ export async function GET() {
 
     const eventStart = await getSetting("event_start", "2026-07-01T00:00:00+08:00");
     const eventEnd = await getSetting("event_end", "2026-08-31T23:59:59+08:00");
+    const stageUploadStart = await getSetting("stage_upload_start", "2026-07-01T00:00:00+08:00");
+    const stageReviewStart = await getSetting("stage_review_start", "2026-08-15T00:00:00+08:00");
+    const stageResultStart = await getSetting("stage_result_start", "2026-09-01T00:00:00+08:00");
 
-    return NextResponse.json({ event_start: eventStart, event_end: eventEnd });
+    return NextResponse.json({
+      event_start: eventStart,
+      event_end: eventEnd,
+      stage_upload_start: stageUploadStart,
+      stage_review_start: stageReviewStart,
+      stage_result_start: stageResultStart,
+    });
   } catch (err) {
     console.error("Get settings error:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
@@ -62,9 +71,12 @@ export async function PUT(request: Request) {
 
     await ensureSettingsTable();
 
-    const { event_start, event_end } = await request.json();
+    const { event_start, event_end, stage_upload_start, stage_review_start, stage_result_start } = await request.json();
     if (event_start) await setSetting("event_start", event_start);
     if (event_end) await setSetting("event_end", event_end);
+    if (stage_upload_start) await setSetting("stage_upload_start", stage_upload_start);
+    if (stage_review_start) await setSetting("stage_review_start", stage_review_start);
+    if (stage_result_start) await setSetting("stage_result_start", stage_result_start);
 
     return NextResponse.json({ ok: true });
   } catch (err) {

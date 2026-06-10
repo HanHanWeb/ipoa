@@ -17,7 +17,7 @@ const links = [
   {
     title: "IPOA 赛事主页",
     description: "查看赛事详情与最新动态",
-    url: "https://ipoa.interever.cn",
+    url: "https://ipoa.interver.cn",
     icon: ExternalLink,
   },
 ];
@@ -35,7 +35,7 @@ export default function CommunityPage() {
               <MessageCircle className="size-5" />
               QQ 交流群
             </CardTitle>
-            <CardDescription>加入群聊与其他参赛者交流</CardDescription>
+            <CardDescription>加入群聊与其他参赛交流</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-lg bg-muted p-4">

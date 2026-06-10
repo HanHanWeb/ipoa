@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -21,21 +20,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ClipboardList, CheckCircle, XCircle, Eye, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ClipboardList, Eye, Loader2, Search } from "lucide-react";
 
 interface WorkItem {
   id: number;
@@ -52,74 +49,80 @@ interface WorkItem {
   os: string;
   tool: string;
   source_url: string;
-  review_status: string;
-  review_comment: string;
   user_name: string;
   user_email: string;
   user_avatar: string;
+  scored_count: number;
+  total_reviewers: number;
 }
 
-const reviewLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "待审核", variant: "secondary" },
-  approved: { label: "已通过", variant: "default" },
-  rejected: { label: "已驳回", variant: "destructive" },
-};
+interface ScoreDetail {
+  reviewer_id: string;
+  reviewer_name: string;
+  reviewer_avatar: string;
+  score: number;
+  comment: string;
+}
+
+interface ReviewerInfo {
+  id: string;
+  name: string;
+  avatar: string;
+}
 
 export default function WorksPage() {
+  const router = useRouter();
   const [works, setWorks] = useState<WorkItem[]>([]);
-  const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [reviewTarget, setReviewTarget] = useState<WorkItem | null>(null);
-  const [reviewStatus, setReviewStatus] = useState("");
-  const [reviewComment, setReviewComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [detailTarget, setDetailTarget] = useState<WorkItem | null>(null);
+  const [filterType, setFilterType] = useState("");
+  const [filterOs, setFilterOs] = useState("");
+  const [filterTool, setFilterTool] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [scoreDialogWork, setScoreDialogWork] = useState<WorkItem | null>(null);
+  const [scoreDetails, setScoreDetails] = useState<ScoreDetail[]>([]);
+  const [dialogReviewers, setDialogReviewers] = useState<ReviewerInfo[]>([]);
+  const [scoreDialogLoading, setScoreDialogLoading] = useState(false);
 
-  const fetchWorks = () => {
+  useEffect(() => {
     fetch("/api/works")
       .then((res) => res.json())
       .then((data) => {
         setWorks(data.works || []);
-        setRole(data.role || "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchWorks();
   }, []);
 
-  const openReview = (work: WorkItem) => {
-    setReviewTarget(work);
-    setReviewStatus(work.review_status === "pending" ? "" : work.review_status);
-    setReviewComment(work.review_comment || "");
-  };
-
-  const submitReview = async () => {
-    if (!reviewTarget || !reviewStatus) return;
-    setSubmitting(true);
-    await fetch("/api/works", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        submissionId: reviewTarget.id,
-        review_status: reviewStatus,
-        review_comment: reviewComment,
-      }),
-    });
-    setSubmitting(false);
-    setReviewTarget(null);
-    fetchWorks();
-  };
-
-  const getImageUrls = (imageUrl: string): string[] => {
-    try {
-      const parsed = JSON.parse(imageUrl);
-      return Array.isArray(parsed) ? parsed : [imageUrl];
-    } catch {
-      return [imageUrl];
+  const filteredWorks = works.filter((work) => {
+    if (filterType && work.work_type !== filterType) return false;
+    if (filterOs && work.os !== filterOs) return false;
+    if (filterTool && work.tool !== filterTool) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchTitle = work.title?.toLowerCase().includes(q);
+      const matchDesc = work.description?.toLowerCase().includes(q);
+      if (!matchTitle && !matchDesc) return false;
     }
+    return true;
+  });
+
+  const uniqueTypes = [...new Set(works.map((w) => w.work_type).filter(Boolean))];
+  const uniqueOs = [...new Set(works.map((w) => w.os).filter(Boolean))];
+  const uniqueTools = [...new Set(works.map((w) => w.tool).filter(Boolean))];
+
+  const openScoreDialog = async (work: WorkItem) => {
+    setScoreDialogWork(work);
+    setScoreDialogLoading(true);
+    try {
+      const res = await fetch(`/api/scores?submissionId=${work.id}`);
+      const data = await res.json();
+      setScoreDetails(data.scores || []);
+      setDialogReviewers(data.reviewers || []);
+    } catch {
+      setScoreDetails([]);
+      setDialogReviewers([]);
+    }
+    setScoreDialogLoading(false);
   };
 
   if (loading) {
@@ -144,26 +147,70 @@ export default function WorksPage() {
             已提交作品
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="relative flex-1 min-w-full sm:min-w-48 sm:flex-1">
+              <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="搜索作品名或简介..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <Select value={filterType} onValueChange={(v) => setFilterType(v === "all" ? "" : v)}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="作品类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部类型</SelectItem>
+                {uniqueTypes.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterOs} onValueChange={(v) => setFilterOs(v === "all" ? "" : v)}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="操作系统" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部系统</SelectItem>
+                {uniqueOs.map((o) => (
+                  <SelectItem key={o} value={o}>{o}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterTool} onValueChange={(v) => setFilterTool(v === "all" ? "" : v)}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="使用工具" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部工具</SelectItem>
+                {uniqueTools.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {works.length === 0 ? (
             <p className="text-muted-foreground">暂无提交</p>
+          ) : filteredWorks.length === 0 ? (
+            <p className="text-muted-foreground">没有匹配的作品</p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>提交者</TableHead>
                   <TableHead>作品名</TableHead>
-                  <TableHead>类型</TableHead>
                   <TableHead>所有人</TableHead>
-                  <TableHead>审核状态</TableHead>
+                  <TableHead>评分状态</TableHead>
                   <TableHead>提交时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {works.map((work) => {
-                  const status = reviewLabels[work.review_status] || reviewLabels.pending;
-                  return (
+                {filteredWorks.map((work) => (
                     <TableRow key={work.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -177,15 +224,14 @@ export default function WorksPage() {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{work.title}</TableCell>
-                      <TableCell>{work.work_type}</TableCell>
                       <TableCell>{work.owner}</TableCell>
                       <TableCell>
-                        <Badge variant={status.variant}>{status.label}</Badge>
-                        {work.review_comment && (
-                          <span className="ml-1 text-xs text-muted-foreground" title={work.review_comment}>
-                            (有评语)
-                          </span>
-                        )}
+                        <button
+                          className={`cursor-pointer hover:underline ${work.scored_count >= work.total_reviewers && work.total_reviewers > 0 ? "text-green-600 font-medium" : "text-muted-foreground"}`}
+                          onClick={() => openScoreDialog(work)}
+                        >
+                          {work.scored_count}/{work.total_reviewers}
+                        </button>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {work.created_at
@@ -193,136 +239,64 @@ export default function WorksPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setDetailTarget(work)}
-                          >
-                            <Eye className="mr-1 size-3" />
-                            查看
-                          </Button>
-                          {role === "reviewer" && (
-                            <Button
-                              size="sm"
-                              variant={work.review_status === "pending" ? "default" : "outline"}
-                              onClick={() => openReview(work)}
-                            >
-                              {work.review_status === "pending" ? "审核" : "修改审核"}
-                            </Button>
-                          )}
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => router.push(`/dashboard/works/${work.id}`)}
+                        >
+                          <Eye data-icon="inline-start" />
+                          查看
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
+                ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailTarget} onOpenChange={(o) => { if (!o) setDetailTarget(null); }}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{detailTarget?.title}</DialogTitle>
-            <DialogDescription>作品详情</DialogDescription>
-          </DialogHeader>
-          {detailTarget && (
-            <div className="space-y-3 text-sm">
-              <div className="grid grid-cols-2 gap-2">
-                <div><span className="text-muted-foreground">类型：</span>{detailTarget.work_type}</div>
-                <div><span className="text-muted-foreground">所有人：</span>{detailTarget.owner}</div>
-                <div><span className="text-muted-foreground">版本号：</span>{detailTarget.version || "未填写"}</div>
-                <div><span className="text-muted-foreground">完成日期：</span>{detailTarget.completion_date || "未填写"}</div>
-                <div><span className="text-muted-foreground">联系方式：</span>{detailTarget.contact || "未填写"}</div>
-                <div><span className="text-muted-foreground">操作系统：</span>{detailTarget.os || "未填写"}</div>
-                <div><span className="text-muted-foreground">使用工具：</span>{detailTarget.tool || "未填写"}</div>
-                {(detailTarget.work_type === "临摹" || detailTarget.work_type === "改编") && (
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">原作品出处：</span>
-                    {detailTarget.source_url ? (
-                      <a href={detailTarget.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-                        {detailTarget.source_url}
-                      </a>
-                    ) : "未填写"}
-                  </div>
-                )}
-              </div>
-              <div>
-                <span className="text-muted-foreground">简介：</span>
-                <p className="mt-1">{detailTarget.description}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">作品图片：</span>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {getImageUrls(detailTarget.image_url).map((url, i) => (
-                    <img key={i} src={url} alt={`作品 ${i + 1}`} className="h-24 w-24 rounded border object-cover" />
-                  ))}
-                </div>
-              </div>
-              {detailTarget.review_status !== "pending" && (
-                <div className="rounded-md border p-3">
-                  <span className="text-muted-foreground">审核结果：</span>
-                  <Badge variant={reviewLabels[detailTarget.review_status]?.variant || "secondary"} className="ml-1">
-                    {reviewLabels[detailTarget.review_status]?.label || detailTarget.review_status}
-                  </Badge>
-                  {detailTarget.review_comment && (
-                    <p className="mt-1 text-muted-foreground">评语：{detailTarget.review_comment}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Review Dialog */}
-      <Dialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }}>
+      {/* Score Details Dialog */}
+      <Dialog open={!!scoreDialogWork} onOpenChange={(o) => { if (!o) { setScoreDialogWork(null); setScoreDetails([]); setDialogReviewers([]); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>审核作品：{reviewTarget?.title}</DialogTitle>
-            <DialogDescription>请审核该作品并给出意见</DialogDescription>
+            <DialogTitle>评分状态：{scoreDialogWork?.title}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">审核结果</label>
-              <Select value={reviewStatus} onValueChange={(v) => setReviewStatus(v ?? "")}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择审核结果" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="approved">
-                    <div className="flex items-center gap-1">
-                      <CheckCircle className="size-4 text-green-600" />
-                      通过
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="rejected">
-                    <div className="flex items-center gap-1">
-                      <XCircle className="size-4 text-red-600" />
-                      驳回
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          {scoreDialogLoading ? (
+            <div className="flex h-24 items-center justify-center">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
             </div>
-            <div>
-              <label className="text-sm font-medium">审核评语</label>
-              <Textarea
-                placeholder="请输入审核意见（可选）"
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-              />
+          ) : dialogReviewers.length === 0 ? (
+            <p className="text-sm text-muted-foreground">暂无评委</p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                已打分 {dialogReviewers.filter((r) => scoreDetails.some((s) => s.reviewer_id === r.id)).length} / {dialogReviewers.length}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {dialogReviewers.map((reviewer) => {
+                  const scored = scoreDetails.find((s) => s.reviewer_id === reviewer.id);
+                  return (
+                    <div key={reviewer.id} className="flex flex-col items-center gap-1">
+                      <div className={`relative ${!scored ? "opacity-40" : ""}`}>
+                        <Avatar className="size-10 after:border-0">
+                          <AvatarImage src={reviewer.avatar} alt={reviewer.name} />
+                          <AvatarFallback>
+                            {reviewer.name?.charAt(0)?.toUpperCase() || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        {scored && (
+                          <span className="absolute -bottom-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-green-500 text-[8px] text-white">✓</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground max-w-[48px] truncate">{reviewer.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReviewTarget(null)}>取消</Button>
-            <Button disabled={!reviewStatus || submitting} onClick={submitReview}>
-              {submitting ? "提交中..." : "提交审核"}
-            </Button>
-          </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </div>

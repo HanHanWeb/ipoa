@@ -40,9 +40,9 @@ interface UserItem {
 }
 
 const roleLabels: Record<string, string> = {
-  admin: "管理员",
-  reviewer: "审核员",
-  user: "参赛者",
+  admin: "管理",
+  reviewer: "评委",
+  user: "参赛",
 };
 
 const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = {
@@ -110,6 +110,7 @@ export default function UsersPage() {
           <CardDescription>共 {users.length} 位用户</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -162,12 +163,14 @@ export default function UsersPage() {
                       onValueChange={(v) => changeRole(user.casdoor_id, v ?? user.role)}
                     >
                       <SelectTrigger className="w-28">
-                        <SelectValue />
+                        <SelectValue>
+                          {roleLabels[user.role] || user.role}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">管理员</SelectItem>
-                        <SelectItem value="reviewer">审核员</SelectItem>
-                        <SelectItem value="user">参赛者</SelectItem>
+                        <SelectItem value="admin">管理</SelectItem>
+                        <SelectItem value="reviewer">评委</SelectItem>
+                        <SelectItem value="user">参赛</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -175,6 +178,7 @@ export default function UsersPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -2,19 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getDb, initDb } from "@/lib/db";
 
-async function ensureReviewColumns() {
-  const alterCols = [
-    ["review_status", "TEXT NOT NULL DEFAULT 'pending'"],
-    ["review_comment", "TEXT NOT NULL DEFAULT ''"],
-  ];
-  for (const [col, def] of alterCols) {
-    try {
-      await getDb().execute(`ALTER TABLE submissions ADD COLUMN ${col} ${def}`);
-    } catch {}
-  }
-}
-
-// List all submissions (admin/reviewer)
+// List submissions - admin/reviewer see all, users see only their own
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -29,63 +17,67 @@ export async function GET() {
       sql: "SELECT role FROM users WHERE casdoor_id = ?",
       args: [userId],
     });
-    if (me.rows.length === 0 || !["admin", "reviewer"].includes(me.rows[0].role as string)) {
-      return NextResponse.json({ error: "无权限" }, { status: 403 });
+    if (me.rows.length === 0) {
+      return NextResponse.json({ error: "用户不存在" }, { status: 403 });
     }
 
-    await ensureReviewColumns();
+    const role = me.rows[0].role as string;
 
-    const result = await getDb().execute(
-      `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
+    let sql: string;
+    let args: unknown[];
+
+    if (["admin", "reviewer"].includes(role)) {
+      sql = `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
               s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url,
-              s.review_status, s.review_comment,
               u.name AS user_name, u.email AS user_email, u.avatar AS user_avatar
        FROM submissions s
        LEFT JOIN users u ON u.casdoor_id = s.user_id
-       ORDER BY s.created_at DESC`
-    );
+       ORDER BY s.created_at DESC`;
+      args = [];
+    } else {
+      sql = `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
+              s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url,
+              u.name AS user_name, u.email AS user_email, u.avatar AS user_avatar
+       FROM submissions s
+       LEFT JOIN users u ON u.casdoor_id = s.user_id
+       WHERE s.user_id = ?
+       ORDER BY s.created_at DESC`;
+      args = [userId];
+    }
 
-    return NextResponse.json({ works: result.rows, role: me.rows[0].role });
+    const result = await getDb().execute({ sql, args });
+
+    // Get total reviewer count
+    const reviewerCountResult = await getDb().execute({
+      sql: "SELECT COUNT(*) as count FROM users WHERE role = 'reviewer'",
+      args: [],
+    });
+    const totalReviewers = Number(reviewerCountResult.rows[0]?.count || 0);
+
+    // Get scored count per submission
+    let scoreCounts: Record<number, number> = {};
+    if (totalReviewers > 0 && result.rows.length > 0) {
+      const submissionIds = result.rows.map((r) => r.id);
+      const placeholders = submissionIds.map(() => "?").join(",");
+      const scoreCountResult = await getDb().execute({
+        sql: `SELECT submission_id, COUNT(DISTINCT reviewer_id) as count FROM scores WHERE submission_id IN (${placeholders}) GROUP BY submission_id`,
+        args: submissionIds,
+      });
+      for (const row of scoreCountResult.rows) {
+        scoreCounts[row.submission_id as number] = Number(row.count);
+      }
+    }
+
+    // Attach scoring info to each work
+    const works = result.rows.map((row) => ({
+      ...row,
+      scored_count: scoreCounts[row.id as number] || 0,
+      total_reviewers: totalReviewers,
+    }));
+
+    return NextResponse.json({ works, role });
   } catch (err) {
     console.error("List works error:", err);
-    return NextResponse.json({ error: "服务器错误" }, { status: 500 });
-  }
-}
-
-// Review a submission (reviewer only)
-export async function PATCH(request: Request) {
-  try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("session_user_id")?.value;
-    if (!userId) {
-      return NextResponse.json({ error: "未登录" }, { status: 401 });
-    }
-
-    await initDb();
-
-    const me = await getDb().execute({
-      sql: "SELECT role FROM users WHERE casdoor_id = ?",
-      args: [userId],
-    });
-    if (me.rows.length === 0 || me.rows[0].role !== "reviewer") {
-      return NextResponse.json({ error: "仅审核员可审核作品" }, { status: 403 });
-    }
-
-    await ensureReviewColumns();
-
-    const { submissionId, review_status, review_comment } = await request.json();
-    if (!submissionId || !["approved", "rejected"].includes(review_status)) {
-      return NextResponse.json({ error: "参数错误" }, { status: 400 });
-    }
-
-    await getDb().execute({
-      sql: "UPDATE submissions SET review_status = ?, review_comment = ? WHERE id = ?",
-      args: [review_status, review_comment || "", submissionId],
-    });
-
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("Review error:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
   }
 }
