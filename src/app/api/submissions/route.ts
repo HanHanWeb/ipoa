@@ -7,6 +7,7 @@ async function ensureSubmissionsTable() {
     CREATE TABLE IF NOT EXISTS submissions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL,
+      work_type TEXT NOT NULL DEFAULT '',
       owner TEXT NOT NULL,
       title TEXT NOT NULL,
       description TEXT NOT NULL,
@@ -15,6 +16,10 @@ async function ensureSubmissionsTable() {
       FOREIGN KEY (user_id) REFERENCES users(casdoor_id)
     )
   `);
+  // Add work_type column if missing
+  try {
+    await getDb().execute("ALTER TABLE submissions ADD COLUMN work_type TEXT NOT NULL DEFAULT ''");
+  } catch {}
 }
 
 // Get current user's submissions
@@ -30,7 +35,7 @@ export async function GET() {
     await ensureSubmissionsTable();
 
     const result = await getDb().execute({
-      sql: "SELECT id, owner, title, description, image_url, created_at FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
+      sql: "SELECT id, work_type, owner, title, description, image_url, created_at FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
       args: [userId],
     });
 
@@ -53,16 +58,16 @@ export async function POST(request: Request) {
     await initDb();
     await ensureSubmissionsTable();
 
-    const { owner, title, description, image_urls } = await request.json();
-    if (!owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
+    const { work_type, owner, title, description, image_urls } = await request.json();
+    if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
       return NextResponse.json({ error: "所有字段均为必填" }, { status: 400 });
     }
 
     const imageUrl = JSON.stringify(image_urls);
 
     await getDb().execute({
-      sql: "INSERT INTO submissions (user_id, owner, title, description, image_url) VALUES (?, ?, ?, ?, ?)",
-      args: [userId, owner, title, description, imageUrl],
+      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url) VALUES (?, ?, ?, ?, ?, ?)",
+      args: [userId, work_type, owner, title, description, imageUrl],
     });
 
     return NextResponse.json({ ok: true });

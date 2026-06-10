@@ -23,9 +23,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Upload, ImagePlus, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Submission {
   id: number;
+  work_type: string;
   owner: string;
   title: string;
   description: string;
@@ -34,6 +42,7 @@ interface Submission {
 }
 
 export default function SubmitPage() {
+  const [workType, setWorkType] = useState("");
   const [owner, setOwner] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -145,7 +154,7 @@ export default function SubmitPage() {
   };
 
   const handleSubmit = async () => {
-    if (!owner.trim() || !title.trim() || !description.trim() || imageUrls.length === 0) {
+    if (!workType || !owner.trim() || !title.trim() || !description.trim() || imageUrls.length === 0) {
       setMessage("请填写所有字段");
       return;
     }
@@ -156,11 +165,12 @@ export default function SubmitPage() {
     const res = await fetch("/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ owner, title, description, image_urls: imageUrls }),
+      body: JSON.stringify({ work_type: workType, owner, title, description, image_urls: imageUrls }),
     });
 
     if (res.ok) {
       setMessage("提交成功！");
+      setWorkType("");
       setOwner("");
       setTitle("");
       setDescription("");
@@ -188,6 +198,19 @@ export default function SubmitPage() {
           <CardDescription>填写作品信息并上传作品图片</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label className="text-sm font-medium">作品类型</label>
+            <Select value={workType} onValueChange={setWorkType}>
+              <SelectTrigger>
+                <SelectValue placeholder="请选择作品类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="原创">原创</SelectItem>
+                <SelectItem value="临摹">临摹</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label className="text-sm font-medium">作品所有人 / 组织</label>
             <Input
@@ -326,7 +349,7 @@ export default function SubmitPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{sub.title}</p>
-                      <p className="text-xs text-muted-foreground">{sub.owner}</p>
+                      <p className="text-xs text-muted-foreground">{sub.owner} · {sub.work_type || "未分类"}</p>
                       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                         {sub.description}
                       </p>
