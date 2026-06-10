@@ -166,7 +166,7 @@ export default function DashboardPage() {
               用户信息
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-4 min-h-[96px]">
+          <CardContent className="py-4">
             {user ? (
               <div className="flex items-center gap-4">
                 <Avatar className="size-16 after:border-0">
@@ -197,8 +197,13 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex h-24 items-center justify-center">
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+              <div className="flex items-center gap-4">
+                <div className="size-16 rounded-full bg-muted animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-5 w-24 rounded bg-muted animate-pulse" />
+                  <div className="h-4 w-32 rounded bg-muted animate-pulse" />
+                  <div className="h-5 w-20 rounded bg-muted animate-pulse" />
+                </div>
               </div>
             )}
           </CardContent>
@@ -222,10 +227,15 @@ export default function DashboardPage() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-4 px-4 md:px-7 min-h-[96px]">
+          <CardContent className="py-4 px-4 md:px-7">
             {countdown.status === "loading" ? (
-              <div className="flex h-24 items-center justify-center">
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+              <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-lg bg-muted p-2 md:p-3">
+                    <div className="h-8 w-12 mx-auto rounded bg-muted-foreground/10 animate-pulse" />
+                    <div className="mt-1 h-3 w-6 mx-auto rounded bg-muted-foreground/10 animate-pulse" />
+                  </div>
+                ))}
               </div>
             ) : countdown.status === "upcoming" ? (
               <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
