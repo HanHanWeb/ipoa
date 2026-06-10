@@ -65,11 +65,12 @@ export async function POST(request: Request) {
     const expire = now + 600;
     const signTime = `${now};${expire}`;
     const signKey = await hmacSha1(secretKey, signTime);
-    const httpStr = `put\n/${key}\n\nhost=${host}\n`;
+    const contentType = file.type;
+    const httpStr = `put\n/${key}\n\ncontent-type=${contentType}&host=${host}\n`;
     const sha1ed = await sha1Hex(httpStr);
     const stringToSign = `sha1\n${signTime}\n${sha1ed}\n`;
     const sig = await hmacSha1(signKey, stringToSign);
-    const authStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sig}`;
+    const authStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=content-type;host&q-url-param-list=&q-signature=${sig}`;
 
     const cosUrl = `https://${host}/${key}`;
     const fileBuffer = await file.arrayBuffer();
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
       headers: {
         Host: host,
         Authorization: authStr,
-        "Content-Type": file.type,
+        "Content-Type": contentType,
       },
       body: fileBuffer,
     });
