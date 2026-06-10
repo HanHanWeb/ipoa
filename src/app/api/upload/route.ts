@@ -43,20 +43,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "COS 未配置" }, { status: 500 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    if (!file) {
-      return NextResponse.json({ error: "缺少文件" }, { status: 400 });
+    const { filename } = await request.json();
+    if (!filename) {
+      return NextResponse.json({ error: "缺少文件名" }, { status: 400 });
     }
 
-    if (!["image/png", "image/jpeg"].includes(file.type)) {
-      return NextResponse.json({ error: "仅支持 PNG / JPG" }, { status: 400 });
-    }
-    if (file.size > 3 * 1024 * 1024) {
-      return NextResponse.json({ error: "文件超过 3MB" }, { status: 400 });
-    }
-
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+    const contentType = ext === "png" ? "image/png" : "image/jpeg";
     const safeId = userId.replace(/[^a-zA-Z0-9_-]/g, "_");
     const key = `ipoa/2026/${safeId}/${Date.now()}.${ext}`;
     const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
@@ -65,36 +58,16 @@ export async function POST(request: Request) {
     const expire = now + 600;
     const signTime = `${now};${expire}`;
     const signKey = await hmacSha1(secretKey, signTime);
-    const contentType = file.type;
     const httpStr = `put\n/${key}\n\ncontent-type=${contentType}&host=${host}\n`;
     const sha1ed = await sha1Hex(httpStr);
     const stringToSign = `sha1\n${signTime}\n${sha1ed}\n`;
     const sig = await hmacSha1(signKey, stringToSign);
-    const authStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=content-type;host&q-url-param-list=&q-signature=${sig}`;
+    const signStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=content-type;host&q-url-param-list=&q-signature=${sig}`;
 
-    const cosUrl = `https://${host}/${key}`;
-    const fileBuffer = await file.arrayBuffer();
+    const uploadUrl = `https://${host}/${key}?${signStr}`;
+    const imageUrl = `https://${host}/${key}`;
 
-    const cosRes = await fetch(cosUrl, {
-      method: "PUT",
-      headers: {
-        Host: host,
-        Authorization: authStr,
-        "Content-Type": contentType,
-      },
-      body: fileBuffer,
-    });
-
-    if (!cosRes.ok) {
-      const errBody = await cosRes.text();
-      console.error("COS error:", cosRes.status, errBody);
-      return NextResponse.json(
-        { error: `COS 上传失败 (${cosRes.status})` },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ imageUrl: cosUrl });
+    return NextResponse.json({ uploadUrl, imageUrl });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("Upload error:", msg);
