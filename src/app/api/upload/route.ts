@@ -30,27 +30,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "COS 未配置" }, { status: 500 });
     }
 
-    const { filename, contentType } = await request.json();
-    if (!filename) {
-      return NextResponse.json({ error: "缺少文件名" }, { status: 400 });
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    if (!file) {
+      return NextResponse.json({ error: "缺少文件" }, { status: 400 });
     }
 
-    const ext = filename.split(".").pop() || "jpg";
+    const ext = file.name.split(".").pop() || "jpg";
     const key = `ipoa/2026/${userId}/${Date.now()}.${ext}`;
-    const now = Math.floor(Date.now() / 1000);
-    const expire = now + 600; // 10 minutes
+    const host = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-    // Generate presigned URL
+    const now = Math.floor(Date.now() / 1000);
+    const expire = now + 600;
     const signTime = `${now};${expire}`;
     const signKey = sign(secretKey, signTime);
-    const httpString = `put\n/${key}\n\nhost=${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com\n`;
+    const httpString = `put\n/${key}\n\nhost=${host}\n`;
     const sha1edHttpString = crypto.createHash("sha1").update(httpString).digest("hex");
-    const signStr = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${sign(signKey, sha1edHttpString)}`;
+    const signature = sign(signKey, sha1edHttpString);
+    const auth = `q-sign-algorithm=sha1&q-ak=${secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
-    const uploadUrl = `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}?${signStr}`;
-    const imageUrl = `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;
+    const cosRes = await fetch(`https://${host}/${key}`, {
+      method: "PUT",
+      headers: {
+        "Host": host,
+        "Authorization": auth,
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: fileBuffer,
+    });
 
-    return NextResponse.json({ uploadUrl, imageUrl, key });
+    if (!cosRes.ok) {
+      const errText = await cosRes.text();
+      console.error("COS upload failed:", cosRes.status, errText);
+      return NextResponse.json({ error: "上传到 COS 失败" }, { status: 500 });
+    }
+
+    const imageUrl = `https://${host}/${key}`;
+    return NextResponse.json({ imageUrl });
   } catch (err) {
     console.error("Upload error:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
