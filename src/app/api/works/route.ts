@@ -24,7 +24,7 @@ export async function GET() {
     const role = me.rows[0].role as string;
 
     let sql: string;
-    let args: unknown[];
+    let args: (string | number | boolean | null)[] = [];
 
     if (["admin", "reviewer"].includes(role)) {
       sql = `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
@@ -33,7 +33,6 @@ export async function GET() {
        FROM submissions s
        LEFT JOIN users u ON u.casdoor_id = s.user_id
        ORDER BY s.created_at DESC`;
-      args = [];
     } else {
       sql = `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
               s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url,
