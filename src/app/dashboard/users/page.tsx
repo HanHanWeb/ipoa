@@ -114,7 +114,7 @@ export default function UsersPage() {
                 <TableHead>用户</TableHead>
                 <TableHead>邮箱</TableHead>
                 <TableHead>角色</TableHead>
-                <TableHead>已提交作品</TableHead>
+                <TableHead>提交状态</TableHead>
                 <TableHead>注册时间</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>

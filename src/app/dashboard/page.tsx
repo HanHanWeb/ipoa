@@ -10,7 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, Megaphone, Pin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp } from "lucide-react";
 
 interface UserInfo {
   id: string;
@@ -70,8 +71,50 @@ function formatDiff(diff: number) {
   return { days, hours, minutes, seconds };
 }
 
+function NoticeCard({ notice }: { notice: Notice }) {
+  const [expanded, setExpanded] = useState(false);
+  const needsTruncate = notice.content.length > 80;
+
+  return (
+    <div className="rounded-lg border p-4">
+      <div className="flex items-center gap-2">
+        {notice.pinned ? (
+          <Badge variant="default" className="gap-1 shrink-0 text-xs">
+            <Pin className="size-2.5" />
+            置顶
+          </Badge>
+        ) : null}
+        <h3 className="truncate text-sm font-medium">{notice.title}</h3>
+      </div>
+      <p className={`mt-2 text-sm text-muted-foreground ${!expanded && needsTruncate ? "line-clamp-3" : ""}`}>
+        {notice.content}
+      </p>
+      {needsTruncate && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 h-6 px-2 text-xs text-muted-foreground"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? (
+            <>收起 <ChevronUp className="ml-0.5 size-3" /></>
+          ) : (
+            <>展开 <ChevronDown className="ml-0.5 size-3" /></>
+          )}
+        </Button>
+      )}
+      <p className="mt-2 text-[10px] text-muted-foreground">
+        {notice.created_at
+          ? new Date(notice.created_at).toLocaleString("zh-CN")
+          : ""}
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<UserInfo | null>(null);
+  const [hasSubmitted, setHasSubmitted] = useState<boolean | null>(null);
   const [notices, setNotices] = useState<Notice[]>([]);
   const countdown = useCountdown();
 
@@ -79,6 +122,9 @@ export default function DashboardPage() {
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => setUser(data.user));
+    fetch("/api/submissions")
+      .then((res) => res.json())
+      .then((data) => setHasSubmitted((data.submissions || []).length > 0));
     fetch("/api/notices")
       .then((res) => res.json())
       .then((data) => setNotices(data.notices || []));
@@ -113,9 +159,19 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     {user.email}
                   </p>
-                  <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
-                    {user.role === "admin" ? "管理员" : user.role === "reviewer" ? "审核员" : "参赛者"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
+                      {user.role === "admin" ? "管理员" : user.role === "reviewer" ? "审核员" : "参赛者"}
+                    </Badge>
+                    {hasSubmitted !== null && (
+                      <Badge
+                        variant="default"
+                        style={{ backgroundColor: hasSubmitted ? "#16a34a" : "#e34b6e" }}
+                      >
+                        {hasSubmitted ? "已提交作品" : "未提交作品"}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -182,30 +238,9 @@ export default function DashboardPage() {
             <Megaphone className="size-5" />
             活动公告
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {notices.map((notice) => (
-              <div
-                key={notice.id}
-                className="rounded-lg border p-3"
-              >
-                <div className="flex items-center gap-2">
-                  {notice.pinned ? (
-                    <Badge variant="default" className="gap-1 shrink-0 text-xs">
-                      <Pin className="size-2.5" />
-                      置顶
-                    </Badge>
-                  ) : null}
-                  <h3 className="truncate text-sm font-medium">{notice.title}</h3>
-                </div>
-                <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
-                  {notice.content}
-                </p>
-                <p className="mt-2 text-[10px] text-muted-foreground">
-                  {notice.created_at
-                    ? new Date(notice.created_at).toLocaleString("zh-CN")
-                    : ""}
-                </p>
-              </div>
+              <NoticeCard key={notice.id} notice={notice} />
             ))}
           </div>
         </div>
