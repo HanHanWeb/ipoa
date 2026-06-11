@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Search,
 } from "lucide-react";
 import { PageTitle } from "@/components/page-title";
 
@@ -39,6 +40,12 @@ interface AwardEntry {
   authors: string;
   description: string;
   sort_order: number;
+}
+
+interface WorkItem {
+  id: number;
+  title: string;
+  owner: string;
 }
 
 export default function AwardsPage() {
@@ -64,14 +71,21 @@ export default function AwardsPage() {
   const [addEntryOpen, setAddEntryOpen] = useState(false);
   const [newWorkTitle, setNewWorkTitle] = useState("");
   const [newAuthors, setNewAuthors] = useState<string[]>([""]);
-  const [newDescription, setNewDescription] = useState("");
+  const [newComment, setNewComment] = useState("");
 
   // 编辑获奖作品
   const [editEntry, setEditEntry] = useState<AwardEntry | null>(null);
   const [editEntryOpen, setEditEntryOpen] = useState(false);
   const [editWorkTitle, setEditWorkTitle] = useState("");
   const [editAuthors, setEditAuthors] = useState<string[]>([""]);
-  const [editDescription, setEditDescription] = useState("");
+  const [editComment, setEditComment] = useState("");
+
+  // 搜索相关
+  const [works, setWorks] = useState<WorkItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<WorkItem[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // 展开的分类
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
@@ -85,8 +99,47 @@ export default function AwardsPage() {
     setLoading(false);
   };
 
+  const fetchWorks = async () => {
+    try {
+      const res = await fetch("/api/works");
+      const data = await res.json();
+      setWorks((data.works || []).map((w: { id: number; title: string; owner: string }) => ({
+        id: w.id,
+        title: w.title,
+        owner: w.owner,
+      })));
+    } catch {}
+  };
+
   useEffect(() => {
     fetchData();
+    fetchWorks();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const results = works.filter(
+        (w) =>
+          w.title.toLowerCase().includes(query) ||
+          w.owner.toLowerCase().includes(query)
+      );
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  }, [searchQuery, works]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleEnabled = async (val: boolean) => {
@@ -158,7 +211,7 @@ export default function AwardsPage() {
         category_id: addEntryCategoryId,
         work_title: newWorkTitle,
         authors: newAuthors.filter((a) => a.trim()),
-        description: newDescription,
+        description: newComment,
         sort_order: entries.filter((e) => e.category_id === addEntryCategoryId).length,
       }),
     });
@@ -166,7 +219,8 @@ export default function AwardsPage() {
     setAddEntryOpen(false);
     setNewWorkTitle("");
     setNewAuthors([""]);
-    setNewDescription("");
+    setNewComment("");
+    setSearchQuery("");
     fetchData();
   };
 
@@ -181,7 +235,7 @@ export default function AwardsPage() {
         id: editEntry.id,
         work_title: editWorkTitle,
         authors: editAuthors.filter((a) => a.trim()),
-        description: editDescription,
+        description: editComment,
         sort_order: editEntry.sort_order,
       }),
     });
@@ -221,6 +275,13 @@ export default function AwardsPage() {
     }
   };
 
+  const selectWork = (work: WorkItem) => {
+    setNewWorkTitle(work.title);
+    setNewAuthors([work.owner]);
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
+
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -233,16 +294,20 @@ export default function AwardsPage() {
     <div className="space-y-6">
       <PageTitle title="获奖名单" />
 
-      {/* 开关 */}
+      {/* 开关设置 */}
       <Card>
-        <CardContent className="flex items-center justify-between py-4">
-          <div>
-            <p className="font-medium">获奖名单页面</p>
-            <p className="text-sm text-muted-foreground">
-              开启后，用户可以在侧边栏看到获奖名单入口
-            </p>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="size-5" />
+            获奖名单页面
+          </CardTitle>
+          <CardDescription>开启后，用户可以在侧边栏看到获奖名单入口</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3">
+            <Switch checked={enabled} onCheckedChange={toggleEnabled} />
+            <Label>{enabled ? "已开启" : "已关闭"}</Label>
           </div>
-          <Switch checked={enabled} onCheckedChange={toggleEnabled} />
         </CardContent>
       </Card>
 
@@ -334,40 +399,42 @@ export default function AwardsPage() {
                         return (
                           <div
                             key={entry.id}
-                            className="flex items-center justify-between rounded-md border p-3"
+                            className="rounded-md border p-3"
                           >
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm">{entry.work_title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {authors.length > 0 ? authors.join("、") : "未填写作者"}
-                              </p>
-                              {entry.description && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {entry.description}
+                            <div className="flex items-start justify-between">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-sm">{entry.work_title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {authors.length > 0 ? authors.join("、") : "未填写作者"}
                                 </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 ml-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setEditEntry(entry);
-                                  setEditWorkTitle(entry.work_title);
-                                  setEditAuthors(parseAuthors(entry.authors).length > 0 ? parseAuthors(entry.authors) : [""]);
-                                  setEditDescription(entry.description);
-                                  setEditEntryOpen(true);
-                                }}
-                              >
-                                <Pencil className="size-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteEntry(entry.id)}
-                              >
-                                <Trash2 className="size-3" />
-                              </Button>
+                                {entry.description && (
+                                  <p className="text-xs text-muted-foreground mt-1 italic">
+                                    评审意见：{entry.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 ml-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setEditEntry(entry);
+                                    setEditWorkTitle(entry.work_title);
+                                    setEditAuthors(parseAuthors(entry.authors).length > 0 ? parseAuthors(entry.authors) : [""]);
+                                    setEditComment(entry.description);
+                                    setEditEntryOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="size-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteEntry(entry.id)}
+                                >
+                                  <Trash2 className="size-3" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -456,6 +523,32 @@ export default function AwardsPage() {
             <DialogTitle>添加获奖作品</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2" ref={searchRef}>
+              <Label>搜索作品</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="输入作品名称或作者搜索"
+                  className="pl-9"
+                />
+                {showSearchResults && searchResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto rounded-md border bg-background shadow-lg">
+                    {searchResults.map((work) => (
+                      <button
+                        key={work.id}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
+                        onClick={() => selectWork(work)}
+                      >
+                        <p className="font-medium">{work.title}</p>
+                        <p className="text-xs text-muted-foreground">{work.owner}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="space-y-2">
               <Label>作品名称</Label>
               <Input
@@ -498,11 +591,11 @@ export default function AwardsPage() {
               </Button>
             </div>
             <div className="space-y-2">
-              <Label>描述（可选）</Label>
+              <Label>评审意见（可选）</Label>
               <Textarea
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="请输入描述"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="请输入评审意见"
                 rows={3}
               />
             </div>
@@ -566,10 +659,10 @@ export default function AwardsPage() {
               </Button>
             </div>
             <div className="space-y-2">
-              <Label>描述（可选）</Label>
+              <Label>评审意见（可选）</Label>
               <Textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
+                value={editComment}
+                onChange={(e) => setEditComment(e.target.value)}
                 rows={3}
               />
             </div>
