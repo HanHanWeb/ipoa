@@ -79,6 +79,7 @@ export default function WorkDetailPage() {
   const [finalScore, setFinalScore] = useState<number | null>(null);
   const [finalScoreInput, setFinalScoreInput] = useState("");
   const [settingFinalScore, setSettingFinalScore] = useState(false);
+  const [finalScoreDialogOpen, setFinalScoreDialogOpen] = useState(false);
 
   const canScore = role === "reviewer";
   const canViewScores = ["admin", "reviewer"].includes(role);
@@ -349,12 +350,23 @@ export default function WorkDetailPage() {
           <div className="w-full md:w-[500px] shrink-0">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">
-                  评委打分
-                  {isPublicStage && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      公示阶段，打分已锁定
-                    </span>
+                <CardTitle className="text-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    评委打分
+                    {isPublicStage && (
+                      <span className="text-xs font-normal text-muted-foreground">
+                        公示阶段，打分已锁定
+                      </span>
+                    )}
+                  </div>
+                  {isAdmin && finalScore === null && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setFinalScoreDialogOpen(true)}
+                    >
+                      设定最终分数
+                    </Button>
                   )}
                 </CardTitle>
               </CardHeader>
@@ -436,31 +448,6 @@ export default function WorkDetailPage() {
                       <div className="rounded-md border-2 border-primary p-4 text-center">
                         <p className="text-3xl font-bold text-primary">{finalScore}</p>
                         <p className="text-sm font-medium text-muted-foreground mt-1">最终分数</p>
-                      </div>
-                    )}
-
-                    {/* 管理员设定最终分数 */}
-                    {isAdmin && finalScore === null && (
-                      <div className="space-y-2 rounded-md border p-4">
-                        <p className="text-sm font-medium">设定最终分数</p>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min={0}
-                            max={100}
-                            value={finalScoreInput}
-                            onChange={(e) => setFinalScoreInput(e.target.value)}
-                            placeholder="0-100"
-                            className="w-24"
-                          />
-                          <Button
-                            size="sm"
-                            onClick={handleSetFinalScore}
-                            disabled={settingFinalScore || !finalScoreInput}
-                          >
-                            {settingFinalScore ? "设定中..." : "确认设定"}
-                          </Button>
-                        </div>
                       </div>
                     )}
 
@@ -551,6 +538,49 @@ export default function WorkDetailPage() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Final Score Dialog */}
+      <Dialog open={finalScoreDialogOpen} onOpenChange={setFinalScoreDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>设定最终分数</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="final-score">最终分数 (0-100)</Label>
+              <Input
+                id="final-score"
+                type="number"
+                min={0}
+                max={100}
+                value={finalScoreInput}
+                onChange={(e) => setFinalScoreInput(e.target.value)}
+                placeholder="请输入最终分数"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFinalScoreDialogOpen(false);
+                  setFinalScoreInput("");
+                }}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={async () => {
+                  await handleSetFinalScore();
+                  setFinalScoreDialogOpen(false);
+                }}
+                disabled={settingFinalScore || !finalScoreInput}
+              >
+                {settingFinalScore ? "设定中..." : "确认设定"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
