@@ -132,16 +132,16 @@ export default function NoticesPage() {
           <CardDescription>发布新的公告通知</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium leading-none">公告标题</label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">公告标题</Label>
             <Input
               placeholder="请输入公告标题"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium leading-none">公告内容</label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">公告内容</Label>
             <Textarea
               placeholder="请输入公告内容"
               value={content}
@@ -250,8 +250,8 @@ export default function NoticesPage() {
             <DialogTitle>编辑公告</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium leading-none">公告标题</label>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-sm">公告标题</Label>
               <Input
                 placeholder="请输入公告标题"
                 value={editTitle}
@@ -259,8 +259,8 @@ export default function NoticesPage() {
                 className="w-full"
               />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium leading-none">公告内容</label>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-sm">公告内容</Label>
               <p className="text-xs text-muted-foreground">支持 HTML 链接，如：&lt;a href="https://example.com"&gt;链接文字&lt;/a&gt;</p>
               <Textarea
                 placeholder="请输入公告内容"
@@ -268,7 +268,6 @@ export default function NoticesPage() {
                 onChange={(e) => setEditContent(e.target.value)}
                 rows={6}
                 className="w-full resize-y break-all"
-                style={{ wordBreak: "break-all" }}
               />
             </div>
             <div className="flex items-center gap-3">

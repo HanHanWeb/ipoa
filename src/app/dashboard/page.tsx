@@ -197,7 +197,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-lg font-medium">{user.name}</p>
-                    <Badge variant="default" style={user.role === "reviewer" ? { backgroundColor: "#e34b6e" } : undefined}>
+                    <Badge variant="default" className={user.role === "reviewer" ? "bg-[#e34b6e]" : ""}>
                       {user.role === "admin" ? "管理" : user.role === "reviewer" ? "评委" : "参赛"}
                     </Badge>
                   </div>
@@ -207,8 +207,7 @@ export default function DashboardPage() {
                   {hasSubmitted !== null ? (
                     <Badge
                       variant="default"
-                      className="mt-1"
-                      style={{ backgroundColor: hasSubmitted ? "#05bc5e" : "#e34b6e" }}
+                      className={`mt-1 ${hasSubmitted ? "bg-[#05bc5e]" : "bg-[#e34b6e]"}`}
                     >
                       {hasSubmitted ? "已提交作品" : "未提交作品"}
                     </Badge>
