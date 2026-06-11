@@ -178,7 +178,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* User Info Card */}
-        <Card data-size="sm">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="size-5" />
@@ -230,7 +230,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Countdown / Progress Card */}
-        <Card data-size="sm">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {countdown.status === "ongoing" ? (
