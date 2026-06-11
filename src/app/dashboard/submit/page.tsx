@@ -710,41 +710,8 @@ export default function SubmitPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>作品提交须知</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                <p>在提交作品之前，请仔细阅读以下须知：</p>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>提交的作品必须是本人/组织自主创作</li>
-                  <li>如有抄袭或侵权，愿意承担法律责任</li>
-                  <li>提交后在评审开始前可以修改</li>
-                  <li>请确保作品信息填写完整准确</li>
-                </ul>
-                <p className="text-sm">
-                  详细规则请阅读：
-                  <a
-                    href="https://intereco.feishu.cn/wiki/KcEbw0c5riLNRmkGltccQ7O8nec"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline"
-                  >
-                    《IPOA 赛事作品提交须知》
-                  </a>
-                </p>
-              </div>
-            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setNoticeDialogOpen(false)}>
-              返回
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={!noticeRead}
-              onClick={() => setNoticeDialogOpen(false)}
-            >
-              我已阅读并了解
-            </AlertDialogAction>
-          </AlertDialogFooter>
-          <div className="flex items-center space-x-2 px-6 pb-2">
+          <div className="flex items-center space-x-2 py-4">
             <input
               type="checkbox"
               id="notice-checkbox"
@@ -764,6 +731,17 @@ export default function SubmitPage() {
               </a>
             </label>
           </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNoticeDialogOpen(false)}>
+              返回
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!noticeRead}
+              onClick={() => setNoticeDialogOpen(false)}
+            >
+              我已阅读并了解
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
