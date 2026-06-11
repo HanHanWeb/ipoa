@@ -20,10 +20,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Megaphone, Plus, Trash2, Pin, Loader2 } from "lucide-react";
+import { Megaphone, Plus, Trash2, Pin, Loader2, Pencil } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PageTitle } from "@/components/page-title";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Notice {
   id: number;
@@ -40,6 +46,12 @@ export default function NoticesPage() {
   const [content, setContent] = useState("");
   const [pinned, setPinned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editPinned, setEditPinned] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchNotices = () => {
     fetch("/api/notices")
@@ -76,6 +88,33 @@ export default function NoticesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
+    fetchNotices();
+  };
+
+  const handleEdit = (notice: Notice) => {
+    setEditingNotice(notice);
+    setEditTitle(notice.title);
+    setEditContent(notice.content);
+    setEditPinned(notice.pinned === 1);
+    setEditDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!editingNotice || !editTitle.trim() || !editContent.trim()) return;
+    setSaving(true);
+    await fetch("/api/notices", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: editingNotice.id,
+        title: editTitle,
+        content: editContent,
+        pinned: editPinned,
+      }),
+    });
+    setSaving(false);
+    setEditDialogOpen(false);
+    setEditingNotice(null);
     fetchNotices();
   };
 
@@ -176,14 +215,24 @@ export default function NoticesPage() {
                         : "-"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(notice.id)}
-                      >
-                        <Trash2 className="mr-1 size-3" />
-                        删除
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(notice)}
+                        >
+                          <Pencil className="mr-1 size-3" />
+                          编辑
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(notice.id)}
+                        >
+                          <Trash2 className="mr-1 size-3" />
+                          删除
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -193,6 +242,55 @@ export default function NoticesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>编辑公告</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label className="text-sm font-medium leading-none">公告标题</label>
+              <Input
+                placeholder="请输入公告标题"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label className="text-sm font-medium leading-none">公告内容</label>
+              <p className="text-xs text-muted-foreground">支持 HTML 链接，如：&lt;a href="https://example.com"&gt;链接文字&lt;/a&gt;</p>
+              <Textarea
+                placeholder="请输入公告内容"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={6}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={editPinned}
+                  onCheckedChange={(checked) => setEditPinned(checked === true)}
+                />
+                置顶
+              </Label>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+              >
+                取消
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "保存中..." : "保存"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -70,6 +70,45 @@ export async function POST(request: Request) {
   }
 }
 
+// Admin: update notice
+export async function PUT(request: Request) {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("session_user_id")?.value;
+
+    if (!userId) {
+      return NextResponse.json({ error: "未登录" }, { status: 401 });
+    }
+
+    await initDb();
+
+    const admin = await getDb().execute({
+      sql: "SELECT role FROM users WHERE casdoor_id = ?",
+      args: [userId],
+    });
+    if (admin.rows.length === 0 || admin.rows[0].role !== "admin") {
+      return NextResponse.json({ error: "无权限" }, { status: 403 });
+    }
+
+    await ensureNoticesTable();
+
+    const { id, title, content, pinned } = await request.json();
+    if (!id || !title || !content) {
+      return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
+    }
+
+    await getDb().execute({
+      sql: "UPDATE notices SET title = ?, content = ?, pinned = ? WHERE id = ?",
+      args: [title, content, pinned ? 1 : 0, id],
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Update notice error:", err);
+    return NextResponse.json({ error: "服务器错误" }, { status: 500 });
+  }
+}
+
 // Admin: delete notice
 export async function DELETE(request: Request) {
   try {
