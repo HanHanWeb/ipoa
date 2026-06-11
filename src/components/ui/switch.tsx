@@ -1,34 +1,43 @@
 "use client";
 
 import * as React from "react";
-import { Switch as BaseSwitch } from "@base-ui-components/react/switch";
 import { cn } from "@/lib/utils";
 
+interface SwitchProps {
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
+
 function Switch({
+  checked = false,
+  onCheckedChange,
+  disabled = false,
   className,
-  ...props
-}: React.ComponentProps<typeof BaseSwitch.Root>) {
+}: SwitchProps) {
   return (
-    <BaseSwitch.Root
-      data-slot="switch"
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onCheckedChange?.(!checked)}
       className={cn(
         "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors",
-        "data-[checked]:bg-primary data-[unchecked]:bg-input",
+        checked ? "bg-primary" : "bg-input",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
-      {...props}
     >
-      <BaseSwitch.Thumb
-        data-slot="switch-thumb"
+      <span
         className={cn(
-          "pointer-events-none block size-4 rounded-full bg-background shadow-lg ring-0",
-          "transition-transform",
-          "data-[checked]:translate-x-4 data-[unchecked]:translate-x-0"
+          "pointer-events-none block size-4 rounded-full bg-background shadow-lg ring-0 transition-transform",
+          checked ? "translate-x-4" : "translate-x-0"
         )}
       />
-    </BaseSwitch.Root>
+    </button>
   );
 }
 
