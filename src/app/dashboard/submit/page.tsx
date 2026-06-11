@@ -800,7 +800,7 @@ export default function SubmitPage() {
                 className="flex-1"
                 onClick={() => {
                   setNoticeDialogOpen(false);
-                  router.back();
+                  router.push("/dashboard");
                 }}
               >
                 取消
