@@ -563,47 +563,12 @@ export default function AwardsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>作者（可多个）</Label>
-              {newAuthors.map((author, idx) => (
-                <div key={idx} className="flex gap-2">
-                  <Input
-                    value={author}
-                    onChange={(e) => {
-                      const updated = [...newAuthors];
-                      updated[idx] = e.target.value;
-                      setNewAuthors(updated);
-                    }}
-                    placeholder={`作者 ${idx + 1}`}
-                  />
-                  {newAuthors.length > 1 && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setNewAuthors(newAuthors.filter((_, i) => i !== idx));
-                      }}
-                    >
-                      <X className="size-3" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setNewAuthors([...newAuthors, ""]);
-                }}
-              >
-                <Plus className="mr-1 size-3" />
-                添加作者
-              </Button>
+              <Label>作者</Label>
+              <Input
+                value={newAuthors[0] || ""}
+                onChange={(e) => setNewAuthors([e.target.value])}
+                placeholder="请输入作者"
+              />
             </div>
             <div className="space-y-2">
               <Label>评审意见（可选）</Label>
@@ -641,37 +606,12 @@ export default function AwardsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>作者（可多个）</Label>
-              {editAuthors.map((author, idx) => (
-                <div key={idx} className="flex gap-2">
-                  <Input
-                    value={author}
-                    onChange={(e) => {
-                      const updated = [...editAuthors];
-                      updated[idx] = e.target.value;
-                      setEditAuthors(updated);
-                    }}
-                    placeholder={`作者 ${idx + 1}`}
-                  />
-                  {editAuthors.length > 1 && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditAuthors(editAuthors.filter((_, i) => i !== idx))}
-                    >
-                      <X className="size-3" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setEditAuthors([...editAuthors, ""])}
-              >
-                <Plus className="mr-1 size-3" />
-                添加作者
-              </Button>
+              <Label>作者</Label>
+              <Input
+                value={editAuthors[0] || ""}
+                onChange={(e) => setEditAuthors([e.target.value])}
+                placeholder="请输入作者"
+              />
             </div>
             <div className="space-y-2">
               <Label>评审意见（可选）</Label>

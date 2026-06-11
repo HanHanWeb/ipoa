@@ -127,7 +127,7 @@ export default function AwardsListPage() {
 
   if (categories.length === 0) {
     return (
-      <div className="-my-4 space-y-6 md:-my-6">
+      <div className="space-y-6">
         <PageTitle title="获奖名单" />
         <h1 className="text-2xl font-semibold">获奖名单</h1>
         <Card>
@@ -140,7 +140,7 @@ export default function AwardsListPage() {
   }
 
   return (
-    <div className="-my-4 space-y-6 md:-my-6">
+    <div className="space-y-6">
       <PageTitle title="获奖名单" />
       <h1 className="text-2xl font-semibold">获奖名单</h1>
 
@@ -191,7 +191,7 @@ export default function AwardsListPage() {
           return (
             <Card key={cat.id} className={`overflow-hidden ${style.border}`}>
               {/* 奖项标题 */}
-              <div className={`flex items-center gap-3 px-6 py-4 ${style.bg}`}>
+              <div className={`flex items-center gap-3 px-6 ${style.bg}`}>
                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${style.iconBg}`}>
                   {style.icon}
                 </div>
