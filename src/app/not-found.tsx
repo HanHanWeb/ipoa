@@ -9,18 +9,12 @@ export default function NotFound() {
         <p className="mt-2 text-muted-foreground">
           抱歉，您访问的页面不存在或已被移除
         </p>
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-8">
           <Link
             href="/"
             className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
             返回首页
-          </Link>
-          <Link
-            href="/dashboard"
-            className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
-          >
-            进入后台
           </Link>
         </div>
       </div>
