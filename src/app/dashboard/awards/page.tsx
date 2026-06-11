@@ -18,13 +18,13 @@ import {
   Plus,
   Trash2,
   Pencil,
-  Loader2,
   ChevronDown,
   ChevronUp,
   X,
   Search,
 } from "lucide-react";
 import { PageTitle } from "@/components/page-title";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AwardCategory {
   id: number;
@@ -284,8 +284,15 @@ export default function AwardsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-24 w-full" />
+        <div className="space-y-4">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
       </div>
     );
   }

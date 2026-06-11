@@ -9,11 +9,11 @@ import {
   Star,
   Flame,
   Heart,
-  Loader2,
   Users,
   FileText,
 } from "lucide-react";
 import { PageTitle } from "@/components/page-title";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AwardCategory {
   id: number;
@@ -119,8 +119,18 @@ export default function AwardsListPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-32" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+        </div>
+        <div className="space-y-6">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
       </div>
     );
   }
