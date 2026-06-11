@@ -191,7 +191,7 @@ export default function DashboardPage() {
                     <Badge
                       variant="default"
                       className="mt-1"
-                      style={{ backgroundColor: hasSubmitted ? "#16a34a" : "#e34b6e" }}
+                      style={{ backgroundColor: hasSubmitted ? "#05bc5e" : "#e34b6e" }}
                     >
                       {hasSubmitted ? "已提交作品" : "未提交作品"}
                     </Badge>
