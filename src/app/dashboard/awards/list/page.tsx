@@ -146,7 +146,7 @@ export default function AwardsListPage() {
 
       {/* 统计 */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Card>
+        <Card className="py-0">
           <CardContent className="flex items-center gap-3 py-4">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
               <Trophy className="size-5 text-primary" />
@@ -157,7 +157,7 @@ export default function AwardsListPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="py-0">
           <CardContent className="flex items-center gap-3 py-4">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
               <FileText className="size-5 text-primary" />
@@ -168,7 +168,7 @@ export default function AwardsListPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="py-0">
           <CardContent className="flex items-center gap-3 py-4">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
               <Users className="size-5 text-primary" />
