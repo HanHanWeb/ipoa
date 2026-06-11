@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
@@ -71,34 +71,15 @@ function formatDiff(diff: number) {
   return { days, hours, minutes, seconds };
 }
 
+// 给 HTML 内容中的链接添加 target="_blank"
+function addTargetBlank(html: string): string {
+  return html.replace(/<a\s/g, '<a target="_blank" rel="noopener noreferrer" ');
+}
+
 function NoticeCard({ notice }: { notice: Notice }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const needsTruncate = notice.content.length > 100;
-  const contentRef = useRef<HTMLDivElement>(null);
-  const dialogContentRef = useRef<HTMLDivElement>(null);
-
-  // 处理链接点击，在新标签页打开
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === "A") {
-        e.preventDefault();
-        e.stopPropagation();
-        window.open((target as HTMLAnchorElement).href, "_blank");
-      }
-    };
-
-    const cardEl = contentRef.current;
-    const dialogEl = dialogContentRef.current;
-
-    if (cardEl) cardEl.addEventListener("click", handleClick);
-    if (dialogEl) dialogEl.addEventListener("click", handleClick);
-
-    return () => {
-      if (cardEl) cardEl.removeEventListener("click", handleClick);
-      if (dialogEl) dialogEl.removeEventListener("click", handleClick);
-    };
-  }, [dialogOpen]);
+  const processedContent = addTargetBlank(notice.content);
 
   return (
     <>
@@ -116,9 +97,8 @@ function NoticeCard({ notice }: { notice: Notice }) {
           <h3 className="truncate text-sm font-medium">{notice.title}</h3>
         </div>
         <div
-          ref={contentRef}
           className={`mt-2 text-sm text-muted-foreground notice-content ${needsTruncate ? "line-clamp-3 md:line-clamp-4" : ""}`}
-          dangerouslySetInnerHTML={{ __html: notice.content }}
+          dangerouslySetInnerHTML={{ __html: processedContent }}
         />
         <p className="mt-2 text-xs text-muted-foreground">
           {notice.created_at
@@ -133,9 +113,8 @@ function NoticeCard({ notice }: { notice: Notice }) {
             <DialogTitle>{notice.title}</DialogTitle>
           </DialogHeader>
           <div
-            ref={dialogContentRef}
             className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap notice-content"
-            dangerouslySetInnerHTML={{ __html: notice.content }}
+            dangerouslySetInnerHTML={{ __html: processedContent }}
           />
           <p className="mt-4 text-xs text-muted-foreground">
             {notice.created_at
