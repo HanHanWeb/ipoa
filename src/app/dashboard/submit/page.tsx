@@ -716,7 +716,7 @@ export default function SubmitPage() {
 
       {/* 作品提交须知弹窗 */}
       <Dialog open={noticeDialogOpen} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-[425px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <svg
