@@ -26,7 +26,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2, MoreHorizontal } from "lucide-react";
+import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2, MoreHorizontal, Trophy } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
@@ -38,6 +38,7 @@ const adminItems = [
   { title: "作品列表", url: "/dashboard/works", icon: ClipboardList },
   { title: "用户管理", url: "/dashboard/users", icon: UserCog },
   { title: "公告管理", url: "/dashboard/notices", icon: Megaphone },
+  { title: "获奖名单", url: "/dashboard/awards", icon: Trophy },
   { title: "基础设置", url: "/dashboard/settings", icon: Settings },
 ];
 
@@ -53,6 +54,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isReviewer, setIsReviewer] = useState(false);
+  const [awardsEnabled, setAwardsEnabled] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null);
 
   useEffect(() => {
@@ -65,6 +67,12 @@ export default function DashboardLayout({
           setIsReviewer(data.user.role === "reviewer");
         }
       });
+    fetch("/api/awards")
+      .then((res) => res.json())
+      .then((data) => {
+        setAwardsEnabled(data.enabled || false);
+      })
+      .catch(() => {});
   }, []);
 
   return (
@@ -100,6 +108,17 @@ export default function DashboardLayout({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+                {awardsEnabled && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      render={<Link href="/dashboard/awards/list" />}
+                      isActive={pathname === "/dashboard/awards/list"}
+                    >
+                      <Trophy />
+                      <span>获奖名单</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
