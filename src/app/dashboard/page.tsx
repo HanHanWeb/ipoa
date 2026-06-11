@@ -90,9 +90,18 @@ function NoticeCard({ notice }: { notice: Notice }) {
           ) : null}
           <h3 className="truncate text-sm font-medium">{notice.title}</h3>
         </div>
-        <p className={`mt-2 text-sm text-muted-foreground ${needsTruncate ? "line-clamp-3 md:line-clamp-4" : ""}`}>
-          {notice.content}
-        </p>
+        <div
+          className={`mt-2 text-sm text-muted-foreground notice-content ${needsTruncate ? "line-clamp-3 md:line-clamp-4" : ""}`}
+          dangerouslySetInnerHTML={{ __html: notice.content }}
+          onClick={(e) => {
+            // 如果点击的是链接，则阻止事件冒泡并打开链接
+            const target = e.target as HTMLElement;
+            if (target.tagName === "A") {
+              e.stopPropagation();
+              window.open((target as HTMLAnchorElement).href, "_blank");
+            }
+          }}
+        />
         <p className="mt-2 text-xs text-muted-foreground">
           {notice.created_at
             ? new Date(notice.created_at).toLocaleDateString("zh-CN")
@@ -105,7 +114,7 @@ function NoticeCard({ notice }: { notice: Notice }) {
           <DialogHeader>
             <DialogTitle>{notice.title}</DialogTitle>
           </DialogHeader>
-          <div className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+          <div className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap notice-content">
             <div dangerouslySetInnerHTML={{ __html: notice.content }} />
           </div>
           <p className="mt-4 text-xs text-muted-foreground">

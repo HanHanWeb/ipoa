@@ -168,3 +168,15 @@
   animation: sweep-spin 1.5s linear infinite;
 }
 
+/* 公告内容链接样式 */
+.notice-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s;
+}
+
+.notice-content a:hover {
+  opacity: 0.8;
+}
+
