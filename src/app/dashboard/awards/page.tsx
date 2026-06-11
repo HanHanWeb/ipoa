@@ -404,7 +404,7 @@ export default function AwardsPage() {
                   </div>
                 </CardHeader>
                 {isExpanded && catEntries.length > 0 && (
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 pb-4">
                     <div className="space-y-2">
                       {catEntries.map((entry) => {
                         const authors = parseAuthors(entry.authors);
