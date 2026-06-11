@@ -94,9 +94,10 @@ function NoticeCard({ notice }: { notice: Notice }) {
           className={`mt-2 text-sm text-muted-foreground notice-content ${needsTruncate ? "line-clamp-3 md:line-clamp-4" : ""}`}
           dangerouslySetInnerHTML={{ __html: notice.content }}
           onClick={(e) => {
-            // 如果点击的是链接，则阻止事件冒泡并打开链接
+            // 如果点击的是链接，则阻止默认行为和冒泡，在新标签页打开
             const target = e.target as HTMLElement;
             if (target.tagName === "A") {
+              e.preventDefault();
               e.stopPropagation();
               window.open((target as HTMLAnchorElement).href, "_blank");
             }
