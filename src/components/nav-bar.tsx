@@ -40,16 +40,13 @@ export function NavBar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative text-sm font-medium transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 {link.label}
-                {isActive && (
-                  <span className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-primary" />
-                )}
               </Link>
             );
           })}
