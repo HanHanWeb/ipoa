@@ -558,16 +558,18 @@ export default function AwardsPage() {
               <Label>作品名称</Label>
               <Input
                 value={newWorkTitle}
-                onChange={(e) => setNewWorkTitle(e.target.value)}
-                placeholder="请输入作品名称"
+                readOnly
+                placeholder="请通过搜索选择作品"
+                className="bg-muted"
               />
             </div>
             <div className="space-y-2">
               <Label>作者</Label>
               <Input
                 value={newAuthors[0] || ""}
-                onChange={(e) => setNewAuthors([e.target.value])}
-                placeholder="请输入作者"
+                readOnly
+                placeholder="选择作品后自动填充"
+                className="bg-muted"
               />
             </div>
             <div className="space-y-2">
