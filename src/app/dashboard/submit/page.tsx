@@ -706,13 +706,39 @@ export default function SubmitPage() {
       </Card>
 
       {/* 作品提交须知弹窗 */}
-      <AlertDialog open={noticeDialogOpen} onOpenChange={(open) => {
-        // 防止点击外部关闭
-        if (open) setNoticeDialogOpen(true);
-      }}>
-        <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogHeader className="text-center sm:text-center">
-            <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-primary/10">
+      <Dialog open={noticeDialogOpen} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-[425px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              作品提交须知
+            </DialogTitle>
+            <DialogDescription>
+              提交作品前，请仔细阅读并同意以下条款
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <a
+              href="https://intereco.feishu.cn/wiki/KcEbw0c5riLNRmkGltccQ7O8nec"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -723,49 +749,52 @@ export default function SubmitPage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-primary"
+                className="text-primary shrink-0"
               >
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
               </svg>
-            </div>
-            <AlertDialogTitle className="text-xl">提交前请阅读</AlertDialogTitle>
-          </AlertDialogHeader>
-          <div className="flex items-start space-x-3 rounded-lg border p-4 my-2">
-            <input
-              type="checkbox"
-              id="notice-checkbox"
-              checked={noticeRead}
-              onChange={(e) => setNoticeRead(e.target.checked)}
-              className="mt-0.5 size-4 rounded border-gray-300"
-            />
-            <label htmlFor="notice-checkbox" className="text-sm leading-relaxed cursor-pointer">
-              我已阅读并同意遵守
-              <a
-                href="https://intereco.feishu.cn/wiki/KcEbw0c5riLNRmkGltccQ7O8nec"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary font-medium hover:underline"
-                onClick={(e) => e.stopPropagation()}
+              <div className="min-w-0">
+                <p className="font-medium">《IPOA 赛事作品提交须知》</p>
+                <p className="text-xs text-muted-foreground">点击查看完整条款内容</p>
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="ml-auto shrink-0 text-muted-foreground"
               >
-                《IPOA 赛事作品提交须知》
-              </a>
-              中的全部条款
-            </label>
-          </div>
-          <AlertDialogFooter className="sm:justify-center">
-            <AlertDialogAction
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+            <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <input
+                type="checkbox"
+                id="notice-checkbox"
+                checked={noticeRead}
+                onChange={(e) => setNoticeRead(e.target.checked)}
+                className="mt-1 size-4 rounded border-gray-300 cursor-pointer"
+              />
+              <label htmlFor="notice-checkbox" className="text-sm leading-relaxed cursor-pointer select-none">
+                我已阅读并同意遵守《IPOA 赛事作品提交须知》中的全部条款，如有虚假信息愿承担相应责任
+              </label>
+            </div>
+            <Button
+              className="w-full"
               disabled={!noticeRead}
-              className="min-w-[120px]"
+              onClick={() => setNoticeDialogOpen(false)}
             >
-              继续提交
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              我已了解，继续提交
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
