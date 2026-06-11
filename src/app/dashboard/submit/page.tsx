@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -783,14 +784,11 @@ export default function SubmitPage() {
               </svg>
             </a>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="notice-checkbox"
-                checked={noticeRead}
-                onChange={(e) => setNoticeRead(e.target.checked)}
-                className="size-4 rounded border-gray-300 cursor-pointer"
-              />
-              <Label htmlFor="notice-checkbox" className="text-sm cursor-pointer select-none">
+              <Label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={noticeRead}
+                  onCheckedChange={(checked) => setNoticeRead(checked === true)}
+                />
                 我已阅读并同意遵守
               </Label>
             </div>
