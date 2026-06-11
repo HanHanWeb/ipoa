@@ -127,7 +127,7 @@ export default function AwardsListPage() {
 
   if (categories.length === 0) {
     return (
-      <div className="space-y-6">
+      <div className="-my-4 space-y-6 md:-my-6">
         <PageTitle title="获奖名单" />
         <h1 className="text-2xl font-semibold">获奖名单</h1>
         <Card>
@@ -140,7 +140,7 @@ export default function AwardsListPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="-my-4 space-y-6 md:-my-6">
       <PageTitle title="获奖名单" />
       <h1 className="text-2xl font-semibold">获奖名单</h1>
 
