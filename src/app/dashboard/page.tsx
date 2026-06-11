@@ -115,9 +115,18 @@ function NoticeCard({ notice }: { notice: Notice }) {
           <DialogHeader>
             <DialogTitle>{notice.title}</DialogTitle>
           </DialogHeader>
-          <div className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap notice-content">
-            <div dangerouslySetInnerHTML={{ __html: notice.content }} />
-          </div>
+          <div
+            className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap notice-content"
+            dangerouslySetInnerHTML={{ __html: notice.content }}
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.tagName === "A") {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open((target as HTMLAnchorElement).href, "_blank");
+              }
+            }}
+          />
           <p className="mt-4 text-xs text-muted-foreground">
             {notice.created_at
               ? new Date(notice.created_at).toLocaleDateString("zh-CN")
