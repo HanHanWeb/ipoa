@@ -359,13 +359,18 @@ export default function WorkDetailPage() {
                       </span>
                     )}
                   </div>
-                  {isAdmin && finalScore === null && (
+                  {isAdmin && (
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setFinalScoreDialogOpen(true)}
+                      onClick={() => {
+                        if (finalScore !== null) {
+                          setFinalScoreInput(String(finalScore));
+                        }
+                        setFinalScoreDialogOpen(true);
+                      }}
                     >
-                      设定最终分数
+                      {finalScore !== null ? "修改最终分数" : "设定最终分数"}
                     </Button>
                   )}
                 </CardTitle>
@@ -445,7 +450,17 @@ export default function WorkDetailPage() {
 
                     {/* 最终分数 */}
                     {finalScore !== null && (
-                      <div className="rounded-md border-2 border-primary p-4 text-center">
+                      <div
+                        className={`rounded-md border-2 border-primary p-4 text-center ${
+                          isAdmin ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""
+                        }`}
+                        onClick={() => {
+                          if (isAdmin) {
+                            setFinalScoreInput(String(finalScore));
+                            setFinalScoreDialogOpen(true);
+                          }
+                        }}
+                      >
                         <p className="text-3xl font-bold text-primary">{finalScore}</p>
                         <p className="text-sm font-medium text-muted-foreground mt-1">最终分数</p>
                       </div>
