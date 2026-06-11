@@ -122,8 +122,8 @@ export default function AwardsPage() {
     return (
       <>
         <NavBar />
-        <main className="mx-auto max-w-6xl px-4 pt-24 pb-16">
-          <div className="space-y-6">
+        <main className="px-4 pt-24 pb-16">
+          <div className="mx-auto max-w-6xl space-y-6">
             <Skeleton className="h-8 w-32" />
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <Skeleton className="h-20" />
@@ -145,8 +145,8 @@ export default function AwardsPage() {
     return (
       <>
         <NavBar />
-        <main className="mx-auto max-w-6xl px-4 pt-24 pb-16">
-          <div className="space-y-6">
+        <main className="px-4 pt-24 pb-16">
+          <div className="mx-auto max-w-6xl space-y-6">
             <h1 className="text-2xl font-semibold">获奖名单</h1>
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -162,8 +162,8 @@ export default function AwardsPage() {
   return (
     <>
       <NavBar />
-      <main className="mx-auto max-w-6xl px-4 pt-24 pb-16">
-        <div className="space-y-6">
+      <main className="px-4 pt-24 pb-16">
+        <div className="mx-auto max-w-6xl space-y-6">
           <h1 className="text-2xl font-semibold">获奖名单</h1>
 
           {/* 统计 */}
