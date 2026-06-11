@@ -40,7 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Upload, ImagePlus, X, Calendar as CalendarIcon } from "lucide-react";
+import { Upload, ImagePlus, X, Calendar as CalendarIcon, Clock } from "lucide-react";
 import {
   Select,
   SelectContent,
