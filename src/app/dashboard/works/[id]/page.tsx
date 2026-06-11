@@ -402,10 +402,16 @@ export default function WorkDetailPage() {
                             type="number"
                             min={0}
                             max={100}
+                            step={1}
                             value={myScore}
-                            onChange={(e) => setMyScore(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "" || (Number.isInteger(Number(val)) && Number(val) >= 0 && Number(val) <= 100)) {
+                                setMyScore(val);
+                              }
+                            }}
                             disabled={isPublicStage}
-                            placeholder="0"
+                            placeholder="0-100 整数"
                           />
                         </div>
                         <div className="space-y-1">
@@ -570,9 +576,15 @@ export default function WorkDetailPage() {
                 type="number"
                 min={0}
                 max={100}
+                step={1}
                 value={finalScoreInput}
-                onChange={(e) => setFinalScoreInput(e.target.value)}
-                placeholder="请输入最终分数"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "" || (Number.isInteger(Number(val)) && Number(val) >= 0 && Number(val) <= 100)) {
+                    setFinalScoreInput(val);
+                  }
+                }}
+                placeholder="0-100 整数"
               />
             </div>
             <div className="flex justify-end gap-2">
