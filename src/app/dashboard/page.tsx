@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Clock, User, Megaphone, Pin, ChevronDown, ChevronUp, Loader2, ListChecks, Check } from "lucide-react";
 import { PageTitle } from "@/components/page-title";
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 interface UserInfo {
   id: string;
   name: string;
@@ -70,43 +72,57 @@ function formatDiff(diff: number) {
 }
 
 function NoticeCard({ notice }: { notice: Notice }) {
-  const [expanded, setExpanded] = useState(false);
-  const needsTruncate = notice.content.length > 80;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const needsTruncate = notice.content.length > 100;
 
   return (
-    <div className="rounded-lg border p-4">
-      <div className="flex items-center gap-2">
-        {notice.pinned ? (
-          <Badge variant="default" className="gap-1 shrink-0 text-xs">
-            <Pin className="size-2.5" />
-            置顶
-          </Badge>
-        ) : null}
-        <h3 className="truncate text-sm font-medium">{notice.title}</h3>
+    <>
+      <div className="rounded-lg border p-4">
+        <div className="flex items-center gap-2">
+          {notice.pinned ? (
+            <Badge variant="default" className="gap-1 shrink-0 text-xs">
+              <Pin className="size-2.5" />
+              置顶
+            </Badge>
+          ) : null}
+          <h3 className="truncate text-sm font-medium">{notice.title}</h3>
+        </div>
+        <p className={`mt-2 text-sm text-muted-foreground ${needsTruncate ? "line-clamp-3 md:line-clamp-4" : ""}`}>
+          {notice.content}
+        </p>
+        {needsTruncate && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-1 h-6 px-2 text-xs text-muted-foreground"
+            onClick={() => setDialogOpen(true)}
+          >
+            查看全部
+          </Button>
+        )}
+        <p className="mt-2 text-xs text-muted-foreground">
+          {notice.created_at
+            ? new Date(notice.created_at).toLocaleDateString("zh-CN")
+            : ""}
+        </p>
       </div>
-      <p className={`mt-2 text-sm text-muted-foreground ${!expanded && needsTruncate ? "line-clamp-3" : ""}`}>
-        {notice.content}
-      </p>
-      {needsTruncate && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-1 h-6 px-2 text-xs text-muted-foreground"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? (
-            <>收起 <ChevronUp className="ml-0.5 size-3" /></>
-          ) : (
-            <>展开 <ChevronDown className="ml-0.5 size-3" /></>
-          )}
-        </Button>
-      )}
-      <p className="mt-2 text-xs text-muted-foreground">
-        {notice.created_at
-          ? new Date(notice.created_at).toLocaleDateString("zh-CN")
-          : ""}
-      </p>
-    </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{notice.title}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+            <div dangerouslySetInnerHTML={{ __html: notice.content }} />
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            {notice.created_at
+              ? new Date(notice.created_at).toLocaleDateString("zh-CN")
+              : ""}
+          </p>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
