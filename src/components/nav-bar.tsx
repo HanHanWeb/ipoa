@@ -1,11 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AuthButton } from "@/components/auth-button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const navLinks = [
+  { href: "/", label: "赛事首页" },
+  { href: "/awards", label: "获奖名单", requireEnabled: true },
+];
+
 export function NavBar() {
   const pathname = usePathname();
+  const [awardsEnabled, setAwardsEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/awards")
+      .then((res) => res.json())
+      .then((data) => setAwardsEnabled(data.enabled || false))
+      .catch(() => {});
+  }, []);
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl px-4">
@@ -19,19 +33,26 @@ export function NavBar() {
               crossOrigin="anonymous"
             />
           </a>
-          <Link
-            href="/awards"
-            className={`relative text-sm font-medium transition-colors ${
-              pathname === "/awards"
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            获奖名单
-            {pathname === "/awards" && (
-              <span className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-primary" />
-            )}
-          </Link>
+          {navLinks.map((link) => {
+            if (link.requireEnabled && !awardsEnabled) return null;
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {link.label}
+                {isActive && (
+                  <span className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </Link>
+            );
+          })}
         </div>
         <div className="flex items-center gap-3">
           <AuthButton />
