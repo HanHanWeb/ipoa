@@ -364,6 +364,10 @@ export default function AwardsPage() {
                         variant="outline"
                         onClick={() => {
                           setAddEntryCategoryId(cat.id);
+                          setNewWorkTitle("");
+                          setNewAuthors([""]);
+                          setNewComment("");
+                          setSearchQuery("");
                           setAddEntryOpen(true);
                         }}
                       >
