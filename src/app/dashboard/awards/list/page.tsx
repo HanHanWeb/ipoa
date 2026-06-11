@@ -191,7 +191,7 @@ export default function AwardsListPage() {
           return (
             <Card key={cat.id} className={`overflow-hidden py-0 ${style.border}`}>
               {/* 奖项标题 */}
-              <div className={`flex items-center gap-3 px-6 ${style.bg}`}>
+              <div className={`flex items-center gap-3 px-6 py-4 ${style.bg}`}>
                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${style.iconBg}`}>
                   {style.icon}
                 </div>
