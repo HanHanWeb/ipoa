@@ -611,15 +611,16 @@ export default function AwardsPage() {
               <Label>作品名称</Label>
               <Input
                 value={editWorkTitle}
-                onChange={(e) => setEditWorkTitle(e.target.value)}
+                readOnly
+                className="bg-muted"
               />
             </div>
             <div className="space-y-2">
               <Label>作者</Label>
               <Input
                 value={editAuthors[0] || ""}
-                onChange={(e) => setEditAuthors([e.target.value])}
-                placeholder="请输入作者"
+                readOnly
+                className="bg-muted"
               />
             </div>
             <div className="space-y-2">
