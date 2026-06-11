@@ -348,15 +348,15 @@ export default function AwardsPage() {
                         )}
                       </button>
                       <Trophy className="size-5 text-primary" />
-                      <div>
+                      <div className="flex items-center gap-2">
                         <CardTitle className="text-base">{cat.title}</CardTitle>
-                        {cat.ratio && (
-                          <p className="text-xs text-muted-foreground">{cat.ratio}</p>
-                        )}
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                          {catEntries.length} 件作品
+                        </span>
                       </div>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                        {catEntries.length} 件作品
-                      </span>
+                      {cat.ratio && (
+                        <p className="text-xs text-muted-foreground">{cat.ratio}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
