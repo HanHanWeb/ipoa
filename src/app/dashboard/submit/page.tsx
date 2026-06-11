@@ -790,9 +790,9 @@ export default function SubmitPage() {
                 onChange={(e) => setNoticeRead(e.target.checked)}
                 className="size-4 rounded border-gray-300 cursor-pointer"
               />
-              <label htmlFor="notice-checkbox" className="text-sm cursor-pointer select-none">
+              <Label htmlFor="notice-checkbox" className="text-sm cursor-pointer select-none">
                 我已阅读并同意遵守
-              </label>
+              </Label>
             </div>
             <div className="flex gap-2">
               <Button
