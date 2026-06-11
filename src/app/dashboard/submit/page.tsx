@@ -387,40 +387,40 @@ export default function SubmitPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作品类型</label>
+                <Label className="text-sm text-muted-foreground">作品类型</Label>
                 <p className="mt-1">{submitted.work_type || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作品所有人 / 组织</label>
+                <Label className="text-sm text-muted-foreground">作品所有人 / 组织</Label>
                 <p className="mt-1">{submitted.owner || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作品名</label>
+                <Label className="text-sm text-muted-foreground">作品名</Label>
                 <p className="mt-1">{submitted.title || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作品版本号</label>
+                <Label className="text-sm text-muted-foreground">作品版本号</Label>
                 <p className="mt-1">{submitted.version || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作品完成日期</label>
+                <Label className="text-sm text-muted-foreground">作品完成日期</Label>
                 <p className="mt-1">{submitted.completion_date || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作者联系方式</label>
+                <Label className="text-sm text-muted-foreground">作者联系方式</Label>
                 <p className="mt-1">{submitted.contact || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">操作系统</label>
+                <Label className="text-sm text-muted-foreground">操作系统</Label>
                 <p className="mt-1">{submitted.os || "未填写"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">使用工具</label>
+                <Label className="text-sm text-muted-foreground">使用工具</Label>
                 <p className="mt-1">{submitted.tool || "未填写"}</p>
               </div>
               {(submitted.work_type === "临摹" || submitted.work_type === "改编") && (
                 <div className="sm:col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">原作品出处</label>
+                  <Label className="text-sm text-muted-foreground">原作品出处</Label>
                   <p className="mt-1">
                     {submitted.source_url ? (
                       <a href={submitted.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
@@ -433,13 +433,13 @@ export default function SubmitPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-muted-foreground">作品简介</label>
+              <Label className="text-sm text-muted-foreground">作品简介</Label>
               <p className="mt-1">{submitted.description || "未填写"}</p>
             </div>
 
             {submitted.download_url && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">作品下载链接</label>
+                <Label className="text-sm text-muted-foreground">作品下载链接</Label>
                 <p className="mt-1">
                   <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
                     {submitted.download_url}
@@ -449,7 +449,7 @@ export default function SubmitPage() {
             )}
 
             <div>
-              <label className="text-sm font-medium text-muted-foreground">作品图片</label>
+              <Label className="text-sm text-muted-foreground">作品图片</Label>
               <div className="mt-2 flex flex-wrap gap-3">
                 {urls.map((url: string, i: number) => (
                   <a key={i} data-fancybox="submitted" href={url}>
@@ -486,8 +486,8 @@ export default function SubmitPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品类型 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品类型 <span className="text-red-500">*</span></Label>
             <Select value={workType} onValueChange={(v) => setWorkType(v ?? "")}>
               <SelectTrigger>
                 <SelectValue placeholder="请选择作品类型" />
@@ -501,8 +501,8 @@ export default function SubmitPage() {
           </div>
 
           {needsSourceUrl && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label className="text-sm font-medium">原作品出处 <span className="text-red-500">*</span></label>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-sm">原作品出处 <span className="text-red-500">*</span></Label>
               <Input
                 placeholder="请输入原作品链接"
                 value={sourceUrl}
@@ -511,8 +511,8 @@ export default function SubmitPage() {
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品所有人 / 组织 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品所有人 / 组织 <span className="text-red-500">*</span></Label>
             <Input
               placeholder="请输入个人姓名或组织名称"
               value={owner}
@@ -520,8 +520,8 @@ export default function SubmitPage() {
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品名 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品名 <span className="text-red-500">*</span></Label>
             <Input
               placeholder="请输入作品名称"
               value={title}
@@ -529,8 +529,8 @@ export default function SubmitPage() {
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品简介 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品简介 <span className="text-red-500">*</span></Label>
             <Textarea
               placeholder="请简要描述您的作品"
               value={description}
@@ -538,8 +538,8 @@ export default function SubmitPage() {
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品下载链接 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品下载链接 <span className="text-red-500">*</span></Label>
             <Input
               placeholder="请输入作品下载链接"
               value={downloadUrl}
@@ -547,8 +547,8 @@ export default function SubmitPage() {
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作品版本号 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品版本号 <span className="text-red-500">*</span></Label>
             <Input
               placeholder="v1.0"
               value={version}
@@ -556,8 +556,8 @@ export default function SubmitPage() {
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <Label className="text-sm font-medium">作品完成日期 <span className="text-red-500">*</span></Label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作品完成日期 <span className="text-red-500">*</span></Label>
             <Popover>
               <PopoverTrigger
                 render={
@@ -590,8 +590,8 @@ export default function SubmitPage() {
             </Popover>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label className="text-sm font-medium">作者联系方式 <span className="text-red-500">*</span></label>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm">作者联系方式 <span className="text-red-500">*</span></Label>
             <Input
               placeholder="请输入 QQ 号或微信号"
               value={contact}
@@ -600,8 +600,8 @@ export default function SubmitPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <Label className="text-sm font-medium">操作系统 <span className="text-red-500">*</span></Label>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-sm">操作系统 <span className="text-red-500">*</span></Label>
               <Select value={os} onValueChange={(v) => v && setOs(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="请选择操作系统" />
@@ -613,8 +613,8 @@ export default function SubmitPage() {
               </Select>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <Label className="text-sm font-medium">使用工具 <span className="text-red-500">*</span></Label>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-sm">使用工具 <span className="text-red-500">*</span></Label>
               <Select value={tool} onValueChange={(v) => v && setTool(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="请选择使用工具" />
@@ -628,9 +628,9 @@ export default function SubmitPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <div className="flex flex-col gap-1.5">
             <div>
-              <label className="text-sm font-medium">作品图片 <span className="text-red-500">*</span></label>
+              <Label className="text-sm">作品图片 <span className="text-red-500">*</span></Label>
               <p className="mt-1 text-xs text-muted-foreground">最多5张，仅支持 PNG / JPG，每张不超过 3MB</p>
             </div>
 
