@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export function NavBar() {
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+    <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
         <div className="flex items-center gap-6">
           <a href="/" className="flex items-center">
             <img
