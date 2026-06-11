@@ -1,25 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AuthButton } from "@/components/auth-button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/", label: "赛事首页" },
-  { href: "/awards", label: "获奖名单", requireEnabled: true },
+  { href: "/awards", label: "获奖名单" },
 ];
 
 export function NavBar() {
   const pathname = usePathname();
-  const [awardsEnabled, setAwardsEnabled] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/awards")
-      .then((res) => res.json())
-      .then((data) => setAwardsEnabled(data.enabled || false))
-      .catch(() => {});
-  }, []);
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl px-4">
@@ -34,7 +25,6 @@ export function NavBar() {
             />
           </a>
           {navLinks.map((link) => {
-            if (link.requireEnabled && !awardsEnabled) return null;
             const isActive = pathname === link.href;
             return (
               <Link
