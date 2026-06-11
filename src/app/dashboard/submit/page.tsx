@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,7 @@ interface Submission {
 }
 
 export default function SubmitPage() {
+  const router = useRouter();
   const [workType, setWorkType] = useState("");
   const [owner, setOwner] = useState("");
   const [title, setTitle] = useState("");
@@ -780,25 +782,37 @@ export default function SubmitPage() {
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </a>
-            <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="notice-checkbox"
                 checked={noticeRead}
                 onChange={(e) => setNoticeRead(e.target.checked)}
-                className="mt-1 size-4 rounded border-gray-300 cursor-pointer"
+                className="size-4 rounded border-gray-300 cursor-pointer"
               />
-              <label htmlFor="notice-checkbox" className="text-sm leading-relaxed cursor-pointer select-none">
-                我已阅读并同意遵守《IPOA 赛事作品提交须知》中的全部条款，如有虚假信息愿承担相应责任
+              <label htmlFor="notice-checkbox" className="text-sm cursor-pointer select-none">
+                我已阅读并同意遵守
               </label>
             </div>
-            <Button
-              className="w-full"
-              disabled={!noticeRead}
-              onClick={() => setNoticeDialogOpen(false)}
-            >
-              我已了解，继续提交
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setNoticeDialogOpen(false);
+                  router.back();
+                }}
+              >
+                取消
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!noticeRead}
+                onClick={() => setNoticeDialogOpen(false)}
+              >
+                继续提交
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
