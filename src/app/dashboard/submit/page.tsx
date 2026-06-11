@@ -81,6 +81,8 @@ export default function SubmitPage() {
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
+  const [noticeDialogOpen, setNoticeDialogOpen] = useState(false);
+  const [noticeRead, setNoticeRead] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -91,8 +93,13 @@ export default function SubmitPage() {
     fetch("/api/submissions")
       .then((res) => res.json())
       .then((data) => {
-        setSubmissions(data.submissions || []);
+        const subs = data.submissions || [];
+        setSubmissions(subs);
         setPageLoading(false);
+        // 如果没有提交过作品，显示须知弹窗
+        if (subs.length === 0) {
+          setNoticeDialogOpen(true);
+        }
       })
       .catch(() => setPageLoading(false));
   };
@@ -697,6 +704,68 @@ export default function SubmitPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 作品提交须知弹窗 */}
+      <AlertDialog open={noticeDialogOpen} onOpenChange={setNoticeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>作品提交须知</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>在提交作品之前，请仔细阅读以下须知：</p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>提交的作品必须是本人/组织自主创作</li>
+                  <li>如有抄袭或侵权，愿意承担法律责任</li>
+                  <li>提交后在评审开始前可以修改</li>
+                  <li>请确保作品信息填写完整准确</li>
+                </ul>
+                <p className="text-sm">
+                  详细规则请阅读：
+                  <a
+                    href="https://intereco.feishu.cn/wiki/KcEbw0c5riLNRmkGltccQ7O8nec"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline"
+                  >
+                    《IPOA 赛事作品提交须知》
+                  </a>
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNoticeDialogOpen(false)}>
+              返回
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!noticeRead}
+              onClick={() => setNoticeDialogOpen(false)}
+            >
+              我已阅读并了解
+            </AlertDialogAction>
+          </AlertDialogFooter>
+          <div className="flex items-center space-x-2 px-6 pb-2">
+            <input
+              type="checkbox"
+              id="notice-checkbox"
+              checked={noticeRead}
+              onChange={(e) => setNoticeRead(e.target.checked)}
+              className="size-4 rounded border-gray-300"
+            />
+            <label htmlFor="notice-checkbox" className="text-sm">
+              我已阅读并了解
+              <a
+                href="https://intereco.feishu.cn/wiki/KcEbw0c5riLNRmkGltccQ7O8nec"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
+                《IPOA 赛事作品提交须知》
+              </a>
+            </label>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
