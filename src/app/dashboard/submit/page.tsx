@@ -423,7 +423,7 @@ export default function SubmitPage() {
                   <Label className="text-sm text-muted-foreground">原作品出处</Label>
                   <p className="mt-1">
                     {submitted.source_url ? (
-                      <a href={submitted.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                      <a href={submitted.source_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
                         {submitted.source_url}
                       </a>
                     ) : "未填写"}
@@ -441,7 +441,7 @@ export default function SubmitPage() {
               <div>
                 <Label className="text-sm text-muted-foreground">作品下载链接</Label>
                 <p className="mt-1">
-                  <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
                     {submitted.download_url}
                   </a>
                 </p>
