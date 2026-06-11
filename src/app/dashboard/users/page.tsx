@@ -152,7 +152,7 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>
                     {user.has_submitted ? (
-                      <Badge variant="default" className="bg-green-600">已提交</Badge>
+                      <Badge variant="default" className="bg-[#05bc5e]">已提交</Badge>
                     ) : (
                       <Badge variant="secondary">未提交</Badge>
                     )}
