@@ -245,7 +245,7 @@ export default function NoticesPage() {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>编辑公告</DialogTitle>
           </DialogHeader>
@@ -256,6 +256,7 @@ export default function NoticesPage() {
                 placeholder="请输入公告标题"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full"
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -266,6 +267,7 @@ export default function NoticesPage() {
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 rows={6}
+                className="w-full resize-y"
               />
             </div>
             <div className="flex items-center gap-3">
