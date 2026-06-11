@@ -89,6 +89,7 @@ export default function SubmitPage() {
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
+  const [stageUploadStarted, setStageUploadStarted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [noticeDialogOpen, setNoticeDialogOpen] = useState(false);
@@ -126,6 +127,8 @@ export default function SubmitPage() {
           const now = new Date();
           const reviewStart = data.settings.review_start_date ? new Date(data.settings.review_start_date) : null;
           setReviewStageStarted(reviewStart ? now >= reviewStart : false);
+          const uploadStart = data.settings.stage_upload_start ? new Date(data.settings.stage_upload_start) : null;
+          setStageUploadStarted(uploadStart ? now >= uploadStart : false);
         }
       })
       .catch(() => {});
@@ -466,6 +469,23 @@ export default function SubmitPage() {
             <p className="text-xs text-muted-foreground">
               提交时间：{submitted.created_at ? new Date(submitted.created_at).toLocaleString("zh-CN") : ""}
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Upload stage not started yet
+  if (!stageUploadStarted && !hasSubmitted) {
+    return (
+      <div className="space-y-6">
+        <PageTitle title="作品提交" />
+        <h1 className="text-2xl font-semibold">作品提交</h1>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <Clock className="mb-4 size-12 text-muted-foreground" />
+            <p className="text-lg font-medium text-muted-foreground">作品提交暂未开放</p>
+            <p className="mt-1 text-sm text-muted-foreground">请在活动第一阶段开始后再提交作品</p>
           </CardContent>
         </Card>
       </div>

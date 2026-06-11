@@ -99,6 +99,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
+    // Check if upload stage has started
+    await initDb();
+    await getDb().execute(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+    const stageResult = await getDb().execute({
+      sql: "SELECT value FROM settings WHERE key = ?",
+      args: ["stage_upload_start"],
+    });
+    if (stageResult.rows.length > 0) {
+      const stageStart = new Date(stageResult.rows[0].value as string);
+      if (new Date() < stageStart) {
+        return NextResponse.json({ error: "作品提交暂未开放，请在活动第一阶段开始后再提交" }, { status: 400 });
+      }
+    }
+
     // Check if already submitted
     const existing = await getDb().execute({
       sql: "SELECT id FROM submissions WHERE user_id = ?",
