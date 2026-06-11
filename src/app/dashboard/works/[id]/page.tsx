@@ -430,24 +430,6 @@ export default function WorkDetailPage() {
                     </div>
                     )}
 
-                    {/* 分数统计 */}
-                    {scores.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="rounded-md border p-3 text-center">
-                          <p className="text-2xl font-bold" style={{ color: "#05bc5e" }}>{Math.max(...scores.map(s => s.score))}</p>
-                          <p className="text-xs text-muted-foreground mt-1">最高分</p>
-                        </div>
-                        <div className="rounded-md border p-3 text-center">
-                          <p className="text-2xl font-bold text-red-500">{Math.min(...scores.map(s => s.score))}</p>
-                          <p className="text-xs text-muted-foreground mt-1">最低分</p>
-                        </div>
-                        <div className="rounded-md border p-3 text-center">
-                          <p className="text-2xl font-bold text-primary">{Math.round(scores.reduce((a, b) => a + b.score, 0) / scores.length)}</p>
-                          <p className="text-xs text-muted-foreground mt-1">平均分</p>
-                        </div>
-                      </div>
-                    )}
-
                     {/* 最终分数 */}
                     {finalScore !== null && (
                       <div
@@ -463,6 +445,24 @@ export default function WorkDetailPage() {
                       >
                         <p className="text-3xl font-bold text-primary">{finalScore}</p>
                         <p className="text-sm font-medium text-muted-foreground mt-1">最终分数</p>
+                      </div>
+                    )}
+
+                    {/* 分数统计 */}
+                    {scores.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="rounded-md border p-3 text-center">
+                          <p className="text-2xl font-bold" style={{ color: "#05bc5e" }}>{Math.max(...scores.map(s => s.score))}</p>
+                          <p className="text-xs text-muted-foreground mt-1">最高分</p>
+                        </div>
+                        <div className="rounded-md border p-3 text-center">
+                          <p className="text-2xl font-bold text-red-500">{Math.min(...scores.map(s => s.score))}</p>
+                          <p className="text-xs text-muted-foreground mt-1">最低分</p>
+                        </div>
+                        <div className="rounded-md border p-3 text-center">
+                          <p className="text-2xl font-bold text-primary">{Math.round(scores.reduce((a, b) => a + b.score, 0) / scores.length)}</p>
+                          <p className="text-xs text-muted-foreground mt-1">平均分</p>
+                        </div>
                       </div>
                     )}
 
@@ -501,7 +501,7 @@ export default function WorkDetailPage() {
                                   </div>
                                 </div>
                                 {scored ? (
-                                  <span className="text-base font-bold text-primary ml-1">{scored.score}</span>
+                                  <span className="text-base font-medium text-primary ml-1">{scored.score}</span>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground ml-1">未打分</span>
                                 )}
