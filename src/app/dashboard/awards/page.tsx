@@ -340,7 +340,7 @@ export default function AwardsPage() {
             const catEntries = getEntriesForCategory(cat.id);
             const isExpanded = expandedCategories.has(cat.id);
             return (
-              <Card key={cat.id} className="py-0">
+              <Card key={cat.id} className="py-0 gap-0">
                 <CardHeader className="py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
