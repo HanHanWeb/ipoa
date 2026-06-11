@@ -267,7 +267,8 @@ export default function NoticesPage() {
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 rows={6}
-                className="w-full resize-y"
+                className="w-full resize-y break-all"
+                style={{ wordBreak: "break-all" }}
               />
             </div>
             <div className="flex items-center gap-3">
