@@ -577,9 +577,14 @@ export default function AwardsPage() {
                   />
                   {newAuthors.length > 1 && (
                     <Button
+                      type="button"
                       size="sm"
                       variant="outline"
-                      onClick={() => setNewAuthors(newAuthors.filter((_, i) => i !== idx))}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setNewAuthors(newAuthors.filter((_, i) => i !== idx));
+                      }}
                     >
                       <X className="size-3" />
                     </Button>
@@ -587,9 +592,14 @@ export default function AwardsPage() {
                 </div>
               ))}
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => setNewAuthors([...newAuthors, ""])}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setNewAuthors([...newAuthors, ""]);
+                }}
               >
                 <Plus className="mr-1 size-3" />
                 添加作者
