@@ -77,7 +77,10 @@ function NoticeCard({ notice }: { notice: Notice }) {
 
   return (
     <>
-      <div className="rounded-lg border p-4">
+      <div
+        className="rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => setDialogOpen(true)}
+      >
         <div className="flex items-center gap-2">
           {notice.pinned ? (
             <Badge variant="default" className="gap-1 shrink-0 text-xs">
@@ -90,16 +93,6 @@ function NoticeCard({ notice }: { notice: Notice }) {
         <p className={`mt-2 text-sm text-muted-foreground ${needsTruncate ? "line-clamp-3 md:line-clamp-4" : ""}`}>
           {notice.content}
         </p>
-        {needsTruncate && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-1 h-6 px-2 text-xs text-muted-foreground"
-            onClick={() => setDialogOpen(true)}
-          >
-            查看全部
-          </Button>
-        )}
         <p className="mt-2 text-xs text-muted-foreground">
           {notice.created_at
             ? new Date(notice.created_at).toLocaleDateString("zh-CN")
