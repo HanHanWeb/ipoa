@@ -129,6 +129,7 @@ export default function AwardsListPage() {
     return (
       <div className="space-y-6">
         <PageTitle title="获奖名单" />
+        <h1 className="text-2xl font-semibold">获奖名单</h1>
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             获奖名单暂未公布，请稍后查看
@@ -141,6 +142,7 @@ export default function AwardsListPage() {
   return (
     <div className="space-y-6">
       <PageTitle title="获奖名单" />
+      <h1 className="text-2xl font-semibold">获奖名单</h1>
 
       {/* 统计 */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

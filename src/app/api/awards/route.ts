@@ -23,6 +23,25 @@ async function ensureAwardsTable() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+
+  // 如果没有奖项分类，插入默认的6个奖项
+  const count = await getDb().execute("SELECT COUNT(*) as cnt FROM award_categories");
+  if (count.rows[0].cnt === 0) {
+    const defaultCategories = [
+      { title: "一等奖", ratio: "占总参赛作品的 10%", sort_order: 0 },
+      { title: "二等奖", ratio: "占总参赛作品的 20%", sort_order: 1 },
+      { title: "三等奖", ratio: "占总参赛作品的 30%", sort_order: 2 },
+      { title: "优秀奖", ratio: "占总参赛作品的 40%", sort_order: 3 },
+      { title: "黑马突围奖", ratio: "共 3 名", sort_order: 4 },
+      { title: "人气之星", ratio: "共 1 名（社区投票）", sort_order: 5 },
+    ];
+    for (const cat of defaultCategories) {
+      await getDb().execute({
+        sql: "INSERT INTO award_categories (title, ratio, sort_order) VALUES (?, ?, ?)",
+        args: [cat.title, cat.ratio, cat.sort_order],
+      });
+    }
+  }
 }
 
 // GET - 获取获奖名单

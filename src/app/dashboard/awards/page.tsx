@@ -293,6 +293,7 @@ export default function AwardsPage() {
   return (
     <div className="space-y-6">
       <PageTitle title="获奖名单" />
+      <h1 className="text-2xl font-semibold">获奖名单</h1>
 
       {/* 开关设置 */}
       <Card>
