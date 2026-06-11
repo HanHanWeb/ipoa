@@ -76,9 +76,13 @@ export default function WorkDetailPage() {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isPublicStage, setIsPublicStage] = useState(false);
   const [selectedScore, setSelectedScore] = useState<Score | null>(null);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
+  const [finalScoreInput, setFinalScoreInput] = useState("");
+  const [settingFinalScore, setSettingFinalScore] = useState(false);
 
   const canScore = role === "reviewer";
   const canViewScores = ["admin", "reviewer"].includes(role);
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     fetch("/api/works")
@@ -113,6 +117,7 @@ export default function WorkDetailPage() {
       setScores(scoreData.scores || []);
       setReviewers(scoreData.reviewers || []);
       setCurrentUserId(meData.user?.id || "");
+      setFinalScore(scoreData.final_score ?? null);
 
       if (settingsData.stage_result_start) {
         const resultDate = new Date(settingsData.stage_result_start);
@@ -171,6 +176,32 @@ export default function WorkDetailPage() {
       alert(err.error || "打分失败");
     }
     setScoring(false);
+  };
+
+  const handleSetFinalScore = async () => {
+    if (!work || !finalScoreInput) return;
+    const scoreNum = parseInt(finalScoreInput);
+    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
+      alert("分数需在0-100之间");
+      return;
+    }
+    setSettingFinalScore(true);
+    const res = await fetch("/api/scores", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submissionId: work.id,
+        finalScore: scoreNum,
+      }),
+    });
+    if (res.ok) {
+      setFinalScore(scoreNum);
+      setFinalScoreInput("");
+    } else {
+      const err = await res.json();
+      alert(err.error || "设定失败");
+    }
+    setSettingFinalScore(false);
   };
 
   if (loading) {
@@ -396,6 +427,39 @@ export default function WorkDetailPage() {
                         <div className="rounded-md border p-3 text-center">
                           <p className="text-2xl font-bold text-primary">{Math.round(scores.reduce((a, b) => a + b.score, 0) / scores.length)}</p>
                           <p className="text-xs text-muted-foreground mt-1">平均分</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 最终分数 */}
+                    {finalScore !== null && (
+                      <div className="rounded-md border-2 border-primary p-4 text-center">
+                        <p className="text-3xl font-bold text-primary">{finalScore}</p>
+                        <p className="text-sm font-medium text-muted-foreground mt-1">最终分数</p>
+                      </div>
+                    )}
+
+                    {/* 管理员设定最终分数 */}
+                    {isAdmin && finalScore === null && (
+                      <div className="space-y-2 rounded-md border p-4">
+                        <p className="text-sm font-medium">设定最终分数</p>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={finalScoreInput}
+                            onChange={(e) => setFinalScoreInput(e.target.value)}
+                            placeholder="0-100"
+                            className="w-24"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={handleSetFinalScore}
+                            disabled={settingFinalScore || !finalScoreInput}
+                          >
+                            {settingFinalScore ? "设定中..." : "确认设定"}
+                          </Button>
                         </div>
                       </div>
                     )}

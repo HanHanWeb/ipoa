@@ -60,6 +60,13 @@ export async function GET(request: Request) {
       args: [],
     });
 
+    // Get final_score from submission
+    const submissionResult = await getDb().execute({
+      sql: "SELECT final_score FROM submissions WHERE id = ?",
+      args: [submissionId],
+    });
+    const finalScore = submissionResult.rows.length > 0 ? submissionResult.rows[0].final_score : null;
+
     return NextResponse.json({
       scores: result.rows,
       reviewers: allReviewers.rows.map((r) => ({
@@ -67,6 +74,7 @@ export async function GET(request: Request) {
         name: r.name,
         avatar: r.avatar,
       })),
+      final_score: finalScore,
     });
   } catch (err) {
     console.error("Get scores error:", err);
@@ -122,6 +130,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Score error:", err);
+    return NextResponse.json({ error: "服务器错误" }, { status: 500 });
+  }
+}
+
+// PUT - admin set final score
+export async function PUT(request: Request) {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("session_user_id")?.value;
+    if (!userId) {
+      return NextResponse.json({ error: "未登录" }, { status: 401 });
+    }
+
+    await initDb();
+
+    const me = await getDb().execute({
+      sql: "SELECT role FROM users WHERE casdoor_id = ?",
+      args: [userId],
+    });
+    if (me.rows.length === 0 || me.rows[0].role !== "admin") {
+      return NextResponse.json({ error: "仅管理员可设定最终分数" }, { status: 403 });
+    }
+
+    const { submissionId, finalScore } = await request.json();
+    if (!submissionId || finalScore === undefined || finalScore === null || finalScore < 0 || finalScore > 100) {
+      return NextResponse.json({ error: "参数错误，分数需在0-100之间" }, { status: 400 });
+    }
+
+    await getDb().execute({
+      sql: "UPDATE submissions SET final_score = ? WHERE id = ?",
+      args: [finalScore, submissionId],
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Set final score error:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
   }
 }

@@ -55,6 +55,7 @@ interface WorkItem {
   user_avatar: string;
   scored_count: number;
   total_reviewers: number;
+  final_score: number | null;
 }
 
 interface ScoreDetail {
@@ -211,6 +212,7 @@ export default function WorksPage() {
                   <TableHead>作品名</TableHead>
                   <TableHead>所有人</TableHead>
                   <TableHead>评分状态</TableHead>
+                  <TableHead>最终分数</TableHead>
                   <TableHead>提交时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
@@ -238,6 +240,13 @@ export default function WorksPage() {
                         >
                           {work.scored_count}/{work.total_reviewers}
                         </button>
+                      </TableCell>
+                      <TableCell>
+                        {work.final_score !== null ? (
+                          <span className="font-bold text-primary">{work.final_score}</span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {work.created_at

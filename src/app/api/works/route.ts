@@ -28,14 +28,14 @@ export async function GET() {
 
     if (["admin", "reviewer"].includes(role)) {
       sql = `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
-              s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url, s.download_url,
+              s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url, s.download_url, s.final_score,
               u.name AS user_name, u.email AS user_email, u.avatar AS user_avatar
        FROM submissions s
        LEFT JOIN users u ON u.casdoor_id = s.user_id
        ORDER BY s.created_at DESC`;
     } else {
       sql = `SELECT s.id, s.user_id, s.work_type, s.owner, s.title, s.description, s.image_url,
-              s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url, s.download_url,
+              s.created_at, s.version, s.completion_date, s.contact, s.os, s.tool, s.source_url, s.download_url, s.final_score,
               u.name AS user_name, u.email AS user_email, u.avatar AS user_avatar
        FROM submissions s
        LEFT JOIN users u ON u.casdoor_id = s.user_id

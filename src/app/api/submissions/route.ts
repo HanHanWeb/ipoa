@@ -57,6 +57,7 @@ async function ensureSubmissionsTable() {
     ["tool", "TEXT NOT NULL DEFAULT ''"],
     ["source_url", "TEXT NOT NULL DEFAULT ''"],
     ["download_url", "TEXT NOT NULL DEFAULT ''"],
+    ["final_score", "INTEGER DEFAULT NULL"],
   ];
   for (const [col, def] of alterCols) {
     try {
@@ -78,7 +79,7 @@ export async function GET() {
     await ensureSubmissionsTable();
 
     const result = await getDb().execute({
-      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_url, download_url FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
+      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_url, download_url, final_score FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
       args: [userId],
     });
 
