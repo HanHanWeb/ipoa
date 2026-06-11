@@ -485,7 +485,6 @@ export default function SubmitPage() {
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Clock className="mb-4 size-12 text-muted-foreground" />
             <p className="text-lg font-medium text-muted-foreground">作品提交暂未开放</p>
-            <p className="mt-1 text-sm text-muted-foreground">请在活动第一阶段开始后再提交作品</p>
           </CardContent>
         </Card>
       </div>
