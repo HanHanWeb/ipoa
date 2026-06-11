@@ -2,15 +2,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getDb, initDb } from "@/lib/db";
 
-// In-memory cache
-let awardsCache: { categories: unknown[]; entries: unknown[]; enabled: boolean } | null = null;
-let awardsCacheTime = 0;
-const AWARDS_CACHE_TTL = 60_000; // 60s
-
-function invalidateAwardsCache() {
-  awardsCache = null;
-}
-
 async function ensureAwardsTable() {
   await getDb().execute(`
     CREATE TABLE IF NOT EXISTS award_categories (
@@ -56,11 +47,6 @@ async function ensureAwardsTable() {
 // GET - 获取获奖名单
 export async function GET() {
   try {
-    const now = Date.now();
-    if (awardsCache && now - awardsCacheTime < AWARDS_CACHE_TTL) {
-      return NextResponse.json(awardsCache);
-    }
-
     await initDb();
     await ensureAwardsTable();
 
@@ -79,11 +65,11 @@ export async function GET() {
     });
     const enabled = setting.rows.length > 0 ? setting.rows[0].value === "true" : false;
 
-    const data = { categories: categories.rows, entries: entries.rows, enabled };
-    awardsCache = data;
-    awardsCacheTime = now;
-
-    return NextResponse.json(data);
+    return NextResponse.json({
+      categories: categories.rows,
+      entries: entries.rows,
+      enabled,
+    });
   } catch (err) {
     console.error("Get awards error:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
@@ -121,7 +107,6 @@ export async function POST(request: Request) {
       args: [title, ratio || "", sort_order || 0],
     });
 
-    invalidateAwardsCache();
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Create award category error:", err);
@@ -194,7 +179,6 @@ export async function PUT(request: Request) {
       });
     }
 
-    invalidateAwardsCache();
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Update award error:", err);
@@ -242,7 +226,6 @@ export async function DELETE(request: Request) {
       });
     }
 
-    invalidateAwardsCache();
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Delete award error:", err);
