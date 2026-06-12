@@ -40,7 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Upload, ImagePlus, X, Calendar as CalendarIcon, Clock, FileUp, File, Link2 } from "lucide-react";
+import { Upload, ImagePlus, X, Calendar as CalendarIcon, Clock, FileUp, File, Link2, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -201,34 +201,34 @@ export default function SubmitPage() {
     setMessage("");
 
     try {
-      const uploaded: string[] = [];
+      let successCount = 0;
       for (const file of toUpload) {
-        // Get presigned URL
         let presignRes: Response;
         try {
           presignRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`);
         } catch {
-          setMessage("网络错误，请检查网络连接后重试");
+          setMessage(`"${file.name}" 网络错误，已成功上传 ${successCount} 张`);
           setUploading(false);
+          if (fileRef.current) fileRef.current.value = "";
           return;
         }
 
         if (!presignRes.ok) {
-          let errMsg = "获取上传地址失败";
+          let errMsg = "上传失败";
           try {
             const err = await presignRes.json();
             errMsg = err.error || `服务器返回错误 (${presignRes.status})`;
           } catch {
             errMsg = `服务器返回错误 (${presignRes.status})`;
           }
-          setMessage(`"${file.name}" ${errMsg}`);
+          setMessage(`"${file.name}" ${errMsg}，已成功上传 ${successCount} 张`);
           setUploading(false);
+          if (fileRef.current) fileRef.current.value = "";
           return;
         }
 
         const { uploadUrl, imageUrl } = await presignRes.json();
 
-        // Upload directly to COS
         let cosRes: Response;
         try {
           cosRes = await fetch(uploadUrl, {
@@ -237,22 +237,24 @@ export default function SubmitPage() {
             body: file,
           });
         } catch {
-          setMessage(`"${file.name}" 上传失败，请检查网络`);
+          setMessage(`"${file.name}" 上传失败，已成功上传 ${successCount} 张`);
           setUploading(false);
+          if (fileRef.current) fileRef.current.value = "";
           return;
         }
 
         if (!cosRes.ok) {
-          setMessage(`"${file.name}" 上传失败 (${cosRes.status})`);
+          setMessage(`"${file.name}" 上传失败 (${cosRes.status})，已成功上传 ${successCount} 张`);
           setUploading(false);
+          if (fileRef.current) fileRef.current.value = "";
           return;
         }
 
-        uploaded.push(imageUrl);
+        setImageUrls((prev) => [...prev, imageUrl]);
+        successCount++;
       }
 
-      setImageUrls((prev) => [...prev, ...uploaded]);
-      setMessage(`成功上传 ${uploaded.length} 张图片`);
+      setMessage(`成功上传 ${successCount} 张图片`);
     } catch (err) {
       setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}`);
     }
@@ -722,7 +724,9 @@ export default function SubmitPage() {
                     <File className="size-5 text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatFileSize(uploadedFile.size)}</p>
+                      {uploadedFile.size > 0 && (
+                        <p className="text-xs text-muted-foreground">{formatFileSize(uploadedFile.size)}</p>
+                      )}
                     </div>
                     {!workUploading && (
                       <Button
@@ -925,15 +929,24 @@ export default function SubmitPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>{editing ? "保存确认" : "提交确认"}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {editing ? "确认保存修改后的内容？" : "我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。"}
+                    {submitting ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="size-4 animate-spin" />
+                        {editing ? "正在保存修改..." : "正在提交作品..."}
+                      </span>
+                    ) : (
+                      editing ? "确认保存修改后的内容？" : "我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。"
+                    )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogCancel disabled={submitting}>取消</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleSubmit}
+                    disabled={submitting}
                   >
-                    {editing ? "确认保存" : "确认提交"}
+                    {submitting && <Loader2 className="mr-1 size-4 animate-spin" />}
+                    {editing ? (submitting ? "保存中..." : "确认保存") : (submitting ? "提交中..." : "确认提交")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

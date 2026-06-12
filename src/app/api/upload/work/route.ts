@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
     const key = `${Date.now()}_${sanitized}`;
 
-    const uploadUrl = await getSignedUploadUrl(key, contentType);
+    const uploadUrl = await getSignedUploadUrl(key, contentType, 600, MAX_FILE_SIZE);
     const fileUrl = getS3PublicUrl(key);
 
     return NextResponse.json({ uploadUrl, fileUrl, key });

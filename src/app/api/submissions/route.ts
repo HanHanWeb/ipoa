@@ -106,11 +106,11 @@ export async function POST(request: Request) {
       sql: "SELECT value FROM settings WHERE key = ?",
       args: ["stage_upload_start"],
     });
-    if (stageResult.rows.length > 0) {
-      const stageStart = new Date(stageResult.rows[0].value as string);
-      if (new Date() < stageStart) {
-        return NextResponse.json({ error: "作品提交暂未开放，请在活动第一阶段开始后再提交" }, { status: 400 });
-      }
+    const stageUploadStart = stageResult.rows.length > 0
+      ? new Date(stageResult.rows[0].value as string)
+      : new Date("2026-07-01T00:00:00+08:00");
+    if (new Date() < stageUploadStart) {
+      return NextResponse.json({ error: "作品提交暂未开放，请在活动第一阶段开始后再提交" }, { status: 400 });
     }
 
     // Check if already submitted

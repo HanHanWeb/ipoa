@@ -39,12 +39,14 @@ export function getS3PublicUrl(key: string): string {
 export async function getSignedUploadUrl(
   key: string,
   contentType: string,
-  expiresIn = 600
+  expiresIn = 600,
+  maxSizeBytes?: number
 ): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
     ContentType: contentType,
+    ...(maxSizeBytes ? { ContentLengthUpperBound: maxSizeBytes } : {}),
   });
   return getSignedUrl(getS3Client(), command, { expiresIn });
 }
