@@ -27,11 +27,24 @@ export function AuthButton() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Try sessionStorage cache first
+    try {
+      const cached = sessionStorage.getItem("auth_user");
+      if (cached) {
+        setUser(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
+    } catch {}
+
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
         setUser(data.user);
         setLoading(false);
+        if (data.user) {
+          try { sessionStorage.setItem("auth_user", JSON.stringify(data.user)); } catch {}
+        }
       })
       .catch(() => setLoading(false));
   }, []);
@@ -81,7 +94,7 @@ export function AuthButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
-              render={<a href="/api/auth/logout" />}
+              render={<a href="/api/auth/logout" onClick={() => { try { sessionStorage.removeItem("auth_user"); } catch {} }} />}
             >
               <LogOut data-icon="inline-start" />
               退出登录
