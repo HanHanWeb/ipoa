@@ -680,7 +680,7 @@ export default function SubmitPage() {
                 onClick={() => setUploadMode("file")}
               >
                 <FileUp className="size-4 mr-1" />
-                上传文件
+                在线上传
               </Button>
               <Button
                 type="button"
@@ -689,7 +689,7 @@ export default function SubmitPage() {
                 onClick={() => setUploadMode("link")}
               >
                 <Link2 className="size-4 mr-1" />
-                填写链接
+                填写网盘链接
               </Button>
             </div>
 
