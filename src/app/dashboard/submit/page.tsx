@@ -568,7 +568,7 @@ export default function SubmitPage() {
                   {submitted.download_url.includes("rains3.com/") ? (
                     <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-primary underline">
                       <File className="size-4" />
-                      下载文件
+                      {submitted.download_url.split("/").pop()?.replace(/^\d+_/, "") || "下载文件"}
                     </a>
                   ) : (
                     <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">

@@ -308,7 +308,7 @@ export default function WorkDetailPage() {
               {work.download_url && (
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    {work.download_url.includes("rains3.com/") ? "作品文件" : "下载链接"}
+                    {work.download_url.includes("rains3.com/") ? "作品文件" : "网盘链接"}
                   </p>
                   <a
                     href={work.download_url}
@@ -316,7 +316,9 @@ export default function WorkDetailPage() {
                     rel="noopener noreferrer"
                     className="text-sm text-primary underline"
                   >
-                    {work.download_url.includes("rains3.com/") ? "下载文件" : "下载作品"}
+                    {work.download_url.includes("rains3.com/")
+                      ? (work.download_url.split("/").pop()?.replace(/^\d+_/, "") || "下载文件")
+                      : work.download_url}
                   </a>
                 </div>
               )}
