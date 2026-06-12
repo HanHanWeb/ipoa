@@ -260,10 +260,10 @@ export default function SubmitPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedExts = [".pptx", ".ppt", ".zip", ".rar", ".pdf", ".docx", ".7z"];
+    const allowedExts = [".zip"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
     if (!allowedExts.includes(ext)) {
-      setMessage(`不支持的文件格式，仅支持：${allowedExts.join(", ")}`);
+      setMessage("仅支持 .zip 格式文件");
       return;
     }
 
@@ -698,7 +698,7 @@ export default function SubmitPage() {
                 <input
                   ref={workFileRef}
                   type="file"
-                  accept=".pptx,.ppt,.zip,.rar,.pdf,.docx,.7z"
+                  accept=".zip"
                   onChange={handleWorkFileSelect}
                   className="hidden"
                 />
@@ -752,7 +752,7 @@ export default function SubmitPage() {
                     <p className="text-xs text-muted-foreground text-right">{workUploadProgress}%</p>
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">支持 .pptx, .ppt, .zip, .rar, .pdf, .docx, .7z，最大 200MB</p>
+                <p className="text-xs text-muted-foreground">仅支持 .zip 格式，最大 200MB</p>
               </div>
             ) : (
               <Input
