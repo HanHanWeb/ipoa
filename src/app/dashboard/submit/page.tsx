@@ -213,36 +213,51 @@ export default function SubmitPage() {
     try {
       const uploaded: string[] = [];
       for (const file of toUpload) {
-        let res: Response;
+        // Get presigned URL
+        let presignRes: Response;
         try {
-          res = await fetch("/api/upload", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/octet-stream",
-              "X-Filename": file.name,
-            },
-            body: await file.arrayBuffer(),
-          });
-        } catch (fetchErr) {
-          setMessage(`网络错误，请检查网络连接后重试`);
+          presignRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`);
+        } catch {
+          setMessage("网络错误，请检查网络连接后重试");
           setUploading(false);
           return;
         }
 
-        if (!res.ok) {
-          let errMsg = "上传失败";
+        if (!presignRes.ok) {
+          let errMsg = "获取上传地址失败";
           try {
-            const err = await res.json();
-            errMsg = err.error || `服务器返回错误 (${res.status})`;
+            const err = await presignRes.json();
+            errMsg = err.error || `服务器返回错误 (${presignRes.status})`;
           } catch {
-            errMsg = `服务器返回错误 (${res.status})`;
+            errMsg = `服务器返回错误 (${presignRes.status})`;
           }
           setMessage(`"${file.name}" ${errMsg}`);
           setUploading(false);
           return;
         }
 
-        const { imageUrl } = await res.json();
+        const { uploadUrl, imageUrl } = await presignRes.json();
+
+        // Upload directly to COS
+        let cosRes: Response;
+        try {
+          cosRes = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type || "image/jpeg" },
+            body: file,
+          });
+        } catch {
+          setMessage(`"${file.name}" 上传失败，请检查网络`);
+          setUploading(false);
+          return;
+        }
+
+        if (!cosRes.ok) {
+          setMessage(`"${file.name}" 上传失败 (${cosRes.status})`);
+          setUploading(false);
+          return;
+        }
+
         uploaded.push(imageUrl);
       }
 

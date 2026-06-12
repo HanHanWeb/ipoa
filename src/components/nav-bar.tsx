@@ -14,34 +14,58 @@ export function NavBar() {
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl px-4">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="mx-auto flex h-12 max-w-6xl items-center justify-between md:h-16">
+        <div className="flex items-center gap-2 md:gap-3">
           <a href="/" className="flex items-center">
             <img
               src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
               alt="IPOA Logo"
-              className="h-8 w-auto"
+              className="h-6 w-auto md:h-8"
               crossOrigin="anonymous"
             />
           </a>
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+          {/* Desktop: pill buttons */}
+          <div className="hidden md:flex md:items-center md:gap-3">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+          {/* Mobile: breadcrumb */}
+          <div className="flex items-center gap-1 text-xs md:hidden">
+            {navLinks.map((link, i) => {
+              const isActive = pathname === link.href;
+              return (
+                <span key={link.href} className="flex items-center gap-1">
+                  {i > 0 && <span className="text-muted-foreground">/</span>}
+                  <Link
+                    href={link.href}
+                    className={`transition-colors ${
+                      isActive
+                        ? "font-medium text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </span>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <AuthButton />
         </div>
       </div>
