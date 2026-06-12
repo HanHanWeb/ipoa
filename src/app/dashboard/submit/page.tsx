@@ -733,7 +733,6 @@ export default function SubmitPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
                     onClick={() => workFileRef.current?.click()}
                     disabled={workUploading}
                   >
