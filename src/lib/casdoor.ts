@@ -7,6 +7,12 @@ function getClientId() {
 function getClientSecret() {
   return process.env.CASDOOR_CLIENT_SECRET || "";
 }
+function getApplication() {
+  return process.env.CASDOOR_APPLICATION || "";
+}
+function getOrganization() {
+  return process.env.CASDOOR_ORGANIZATION || "";
+}
 
 // PKCE helpers
 export function generateCodeVerifier(): string {
@@ -37,6 +43,8 @@ export function getAuthUrl(redirectUri: string, codeChallenge: string): string {
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
   });
+  const app = getApplication();
+  if (app) params.set("application", app);
   return `${getEndpoint()}/login/oauth/authorize?${params.toString()}`;
 }
 
