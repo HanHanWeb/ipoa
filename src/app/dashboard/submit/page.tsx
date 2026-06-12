@@ -901,7 +901,17 @@ export default function SubmitPage() {
                     <button
                       type="button"
                       className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
-                      onClick={() => setImageUrls((prev) => prev.filter((_, j) => j !== i))}
+                      onClick={async () => {
+                        const deletedUrl = url;
+                        setImageUrls((prev) => prev.filter((_, j) => j !== i));
+                        try {
+                          await fetch("/api/upload", {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ url: deletedUrl }),
+                          });
+                        } catch { /* ignore */ }
+                      }}
                     >
                       <X className="size-3" />
                     </button>
