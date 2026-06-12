@@ -307,14 +307,16 @@ export default function WorkDetailPage() {
 
               {work.download_url && (
                 <div>
-                  <p className="text-sm text-muted-foreground">下载链接</p>
+                  <p className="text-sm text-muted-foreground">
+                    {work.download_url.includes("ipoa_upload/") ? "作品文件" : "下载链接"}
+                  </p>
                   <a
                     href={work.download_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary underline"
                   >
-                    下载作品
+                    {work.download_url.includes("ipoa_upload/") ? "下载文件" : "下载作品"}
                   </a>
                 </div>
               )}

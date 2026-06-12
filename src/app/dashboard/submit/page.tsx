@@ -40,7 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Upload, ImagePlus, X, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Upload, ImagePlus, X, Calendar as CalendarIcon, Clock, FileUp, File, Link2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -67,6 +67,12 @@ interface Submission {
   download_url: string;
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
 export default function SubmitPage() {
   const router = useRouter();
   const [workType, setWorkType] = useState("");
@@ -88,6 +94,11 @@ export default function SubmitPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [uploadMode, setUploadMode] = useState<"file" | "link">("file");
+  const [uploadedFile, setUploadedFile] = useState<{ key: string; name: string; size: number; url: string } | null>(null);
+  const [workUploading, setWorkUploading] = useState(false);
+  const [workUploadProgress, setWorkUploadProgress] = useState(0);
+  const workFileRef = useRef<HTMLInputElement>(null);
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const [stageUploadStarted, setStageUploadStarted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -247,6 +258,94 @@ export default function SubmitPage() {
     if (fileRef.current) fileRef.current.value = "";
   };
 
+  const handleWorkFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedExts = [".pptx", ".ppt", ".zip", ".rar", ".pdf", ".docx", ".7z"];
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    if (!allowedExts.includes(ext)) {
+      setMessage(`不支持的文件格式，仅支持：${allowedExts.join(", ")}`);
+      return;
+    }
+
+    if (file.size > 200 * 1024 * 1024) {
+      setMessage("文件超过 200MB 限制");
+      return;
+    }
+
+    // Delete old file if re-uploading
+    if (uploadedFile) {
+      try {
+        await fetch("/api/upload/work", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: uploadedFile.key }),
+        });
+      } catch { /* ignore delete error */ }
+    }
+
+    setWorkUploading(true);
+    setWorkUploadProgress(0);
+    setMessage("");
+
+    try {
+      // Get presigned URL
+      const params = new URLSearchParams({
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        fileSize: String(file.size),
+      });
+      const res = await fetch(`/api/upload/work?${params}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "获取上传地址失败");
+
+      // Upload directly to S3 with progress
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            setWorkUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`上传失败 (${xhr.status})`));
+          }
+        };
+        xhr.onerror = () => reject(new Error("上传失败"));
+        xhr.open("PUT", data.uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        xhr.send(file);
+      });
+
+      setUploadedFile({ key: data.key, name: file.name, size: file.size, url: data.fileUrl });
+      setDownloadUrl(data.fileUrl);
+      setMessage("");
+    } catch (err) {
+      setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}`);
+    }
+
+    setWorkUploading(false);
+    if (workFileRef.current) workFileRef.current.value = "";
+  };
+
+  const handleDeleteUploadedFile = async () => {
+    if (!uploadedFile) return;
+    try {
+      await fetch("/api/upload/work", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: uploadedFile.key }),
+      });
+    } catch { /* ignore */ }
+    setUploadedFile(null);
+    setDownloadUrl("");
+    setWorkUploadProgress(0);
+  };
+
   const handleSubmit = async () => {
     if (!workType || !owner.trim() || !title.trim() || !description.trim() || !version.trim() || !completionDate || !contact.trim() || !os.trim() || !tool.trim() || imageUrls.length === 0 || !downloadUrl.trim()) {
       setMessage("请填写所有必填字段");
@@ -371,6 +470,15 @@ export default function SubmitPage() {
                     setTool(submitted.tool || "");
                     setSourceUrl(submitted.source_url || "");
                     setDownloadUrl(submitted.download_url || "");
+                    if (submitted.download_url?.includes("ipoa_upload/")) {
+                      setUploadMode("file");
+                      const parts = submitted.download_url.split("/");
+                      const fileName = parts[parts.length - 1]?.replace(/^\d+_/, "") || "文件";
+                      setUploadedFile({ key: "", name: fileName, size: 0, url: submitted.download_url });
+                    } else {
+                      setUploadMode("link");
+                      setUploadedFile(null);
+                    }
                     let editUrls: string[] = [];
                     try {
                       const parsed = JSON.parse(submitted.image_url);
@@ -442,11 +550,18 @@ export default function SubmitPage() {
 
             {submitted.download_url && (
               <div>
-                <Label className="text-sm text-muted-foreground">作品下载链接</Label>
+                <Label className="text-sm text-muted-foreground">作品文件</Label>
                 <p className="mt-1">
-                  <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                    {submitted.download_url}
-                  </a>
+                  {submitted.download_url.includes("ipoa_upload/") ? (
+                    <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-primary underline">
+                      <File className="size-4" />
+                      下载文件
+                    </a>
+                  ) : (
+                    <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                      {submitted.download_url}
+                    </a>
+                  )}
                 </p>
               </div>
             )}
@@ -558,12 +673,96 @@ export default function SubmitPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label className="text-sm">作品下载链接 <span className="text-red-500">*</span></Label>
-            <Input
-              placeholder="请输入作品下载链接"
-              value={downloadUrl}
-              onChange={(e) => setDownloadUrl(e.target.value)}
-            />
+            <Label className="text-sm">作品文件 <span className="text-red-500">*</span></Label>
+            <div className="flex gap-2 mb-2">
+              <Button
+                type="button"
+                variant={uploadMode === "file" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUploadMode("file")}
+              >
+                <FileUp className="size-4 mr-1" />
+                上传文件
+              </Button>
+              <Button
+                type="button"
+                variant={uploadMode === "link" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUploadMode("link")}
+              >
+                <Link2 className="size-4 mr-1" />
+                填写链接
+              </Button>
+            </div>
+
+            {uploadMode === "file" ? (
+              <div className="space-y-2">
+                <input
+                  ref={workFileRef}
+                  type="file"
+                  accept=".pptx,.ppt,.zip,.rar,.pdf,.docx,.7z"
+                  onChange={handleWorkFileSelect}
+                  className="hidden"
+                />
+                {uploadedFile ? (
+                  <div className="flex items-center gap-3 rounded-md border p-3">
+                    <File className="size-5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(uploadedFile.size)}</p>
+                    </div>
+                    {!workUploading && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => workFileRef.current?.click()}
+                      >
+                        重新上传
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={handleDeleteUploadedFile}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => workFileRef.current?.click()}
+                    disabled={workUploading}
+                  >
+                    <Upload className="size-4 mr-2" />
+                    {workUploading ? "上传中..." : "选择文件"}
+                  </Button>
+                )}
+                {workUploading && (
+                  <div className="space-y-1">
+                    <div className="h-2 w-full rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all"
+                        style={{ width: `${workUploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground text-right">{workUploadProgress}%</p>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">支持 .pptx, .ppt, .zip, .rar, .pdf, .docx, .7z，最大 200MB</p>
+              </div>
+            ) : (
+              <Input
+                placeholder="请输入作品下载链接"
+                value={downloadUrl}
+                onChange={(e) => setDownloadUrl(e.target.value)}
+              />
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
