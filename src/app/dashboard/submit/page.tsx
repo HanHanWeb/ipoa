@@ -107,6 +107,8 @@ export default function SubmitPage() {
   const [noticeRead, setNoticeRead] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const originalImageUrls = useRef<string[]>([]);
+  const originalDownloadUrl = useRef<string>("");
 
   const hasSubmitted = submissions.length > 0;
   const submitted = hasSubmitted ? submissions[0] : null;
@@ -405,9 +407,29 @@ export default function SubmitPage() {
 
       if (res.ok) {
         setMessage(editing ? "修改成功！" : "提交成功！");
+
+        // Clean up orphaned files after successful edit
         if (editing) {
           setEditing(false);
+          // Delete removed images from COS
+          const removedImages = originalImageUrls.current.filter((url) => !imageUrls.includes(url));
+          for (const imgUrl of removedImages) {
+            fetch("/api/upload", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: imgUrl }),
+            }).catch(() => {});
+          }
+          // Delete old S3 file if download URL changed
+          if (originalDownloadUrl.current && originalDownloadUrl.current !== downloadUrl && originalDownloadUrl.current.includes("rains3.com/")) {
+            fetch("/api/upload/work", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: originalDownloadUrl.current }),
+            }).catch(() => {});
+          }
         }
+
         refetchSubmissions();
       } else {
         const err = await res.json();
@@ -494,6 +516,7 @@ export default function SubmitPage() {
                       setUploadMode("link");
                       setUploadedFile(null);
                     }
+                    originalDownloadUrl.current = submitted.download_url || "";
                     let editUrls: string[] = [];
                     try {
                       const parsed = JSON.parse(submitted.image_url);
@@ -502,6 +525,7 @@ export default function SubmitPage() {
                       editUrls = [submitted.image_url];
                     }
                     setImageUrls(editUrls);
+                    originalImageUrls.current = [...editUrls];
                   }}
                 >
                   编辑
