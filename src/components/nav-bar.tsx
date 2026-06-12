@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { AuthButton } from "@/components/auth-button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "赛事首页" },
@@ -11,6 +13,9 @@ const navLinks = [
 
 export function NavBar() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const currentLabel = navLinks.find((l) => l.href === pathname)?.label;
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl px-4">
@@ -43,26 +48,36 @@ export function NavBar() {
               );
             })}
           </div>
-          {/* Mobile: breadcrumb */}
-          <div className="flex items-center gap-1 text-xs md:hidden">
-            {navLinks.map((link, i) => {
-              const isActive = pathname === link.href;
-              return (
-                <span key={link.href} className="flex items-center gap-1">
-                  {i > 0 && <span className="text-muted-foreground">/</span>}
-                  <Link
-                    href={link.href}
-                    className={`transition-colors ${
-                      isActive
-                        ? "font-medium text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </span>
-              );
-            })}
+          {/* Mobile: collapsible breadcrumb */}
+          <div className="relative md:hidden">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-1 text-sm font-medium text-foreground"
+            >
+              {currentLabel || "导航"}
+              <ChevronDown className={`size-4 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+            </button>
+            {menuOpen && (
+              <div className="absolute top-full left-0 mt-2 w-36 rounded-lg border bg-white shadow-lg">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className={`block px-4 py-2.5 text-sm transition-colors ${
+                        isActive
+                          ? "bg-primary/10 font-medium text-primary"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
