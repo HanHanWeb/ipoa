@@ -134,13 +134,11 @@ export default function SubmitPage() {
     fetch("/api/settings")
       .then((res) => res.json())
       .then((data) => {
-        if (data.settings) {
           const now = new Date();
-          const reviewStart = data.settings.review_start_date ? new Date(data.settings.review_start_date) : null;
+          const reviewStart = data.stage_review_start ? new Date(data.stage_review_start) : null;
           setReviewStageStarted(reviewStart ? now >= reviewStart : false);
-          const uploadStart = data.settings.stage_upload_start ? new Date(data.settings.stage_upload_start) : null;
+          const uploadStart = data.stage_upload_start ? new Date(data.stage_upload_start) : null;
           setStageUploadStarted(uploadStart ? now >= uploadStart : false);
-        }
       })
       .catch(() => {});
   }, []);
