@@ -49,7 +49,13 @@ export async function GET(request: Request) {
     const filename = searchParams.get("filename") || "image.jpg";
 
     const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-    const key = `ipoa/2026/${Date.now()}.${ext}`;
+    const allowedExts = ["jpg", "jpeg", "png"];
+    if (!allowedExts.includes(ext)) {
+      return NextResponse.json({ error: "仅支持 JPG/PNG 格式" }, { status: 400 });
+    }
+
+    const rand = Math.random().toString(36).slice(2, 8);
+    const key = `ipoa/2026/${Date.now()}_${rand}.${ext}`;
 
     const uploadUrl = getCosPresignedUrl(key, secretId, secretKey);
     const imageUrl = `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;

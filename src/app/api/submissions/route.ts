@@ -187,7 +187,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "作品不存在或无权限修改" }, { status: 403 });
     }
 
-    if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0) {
+    if (!work_type || !owner || !title || !description || !image_urls || !Array.isArray(image_urls) || image_urls.length === 0 || !download_url) {
       return NextResponse.json({ error: "所有字段均为必填" }, { status: 400 });
     }
 

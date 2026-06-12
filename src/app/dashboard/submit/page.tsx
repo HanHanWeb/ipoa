@@ -111,36 +111,26 @@ export default function SubmitPage() {
   const hasSubmitted = submissions.length > 0;
   const submitted = hasSubmitted ? submissions[0] : null;
 
-  const fetchSubmissions = () => {
-    fetch("/api/submissions")
-      .then((res) => res.json())
-      .then((data) => {
-        const subs = data.submissions || [];
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/submissions").then((res) => res.json()),
+      fetch("/api/settings").then((res) => res.json()),
+    ])
+      .then(([subData, settingsData]) => {
+        const subs = subData.submissions || [];
         setSubmissions(subs);
-        setPageLoading(false);
-        // 如果没有提交过作品，显示须知弹窗
         if (subs.length === 0) {
           setNoticeDialogOpen(true);
         }
-      })
-      .catch(() => setPageLoading(false));
-  };
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-          const now = new Date();
-          const reviewStart = data.stage_review_start ? new Date(data.stage_review_start) : null;
-          setReviewStageStarted(reviewStart ? now >= reviewStart : false);
-          const uploadStart = data.stage_upload_start ? new Date(data.stage_upload_start) : null;
-          setStageUploadStarted(uploadStart ? now >= uploadStart : false);
+        const now = new Date();
+        const reviewStart = settingsData.stage_review_start ? new Date(settingsData.stage_review_start) : null;
+        setReviewStageStarted(reviewStart ? now >= reviewStart : false);
+        const uploadStart = settingsData.stage_upload_start ? new Date(settingsData.stage_upload_start) : null;
+        setStageUploadStarted(uploadStart ? now >= uploadStart : false);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setPageLoading(false));
   }, []);
 
   // Load Turnstile script - only when form is visible
@@ -293,7 +283,7 @@ export default function SubmitPage() {
         await fetch("/api/upload/work", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: uploadedFile.key }),
+          body: JSON.stringify({ key: uploadedFile.key || undefined, url: uploadedFile.url || undefined }),
         });
       } catch { /* ignore delete error */ }
     }
@@ -351,12 +341,19 @@ export default function SubmitPage() {
       await fetch("/api/upload/work", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: uploadedFile.key }),
+        body: JSON.stringify({ key: uploadedFile.key || undefined, url: uploadedFile.url || undefined }),
       });
     } catch { /* ignore */ }
     setUploadedFile(null);
     setDownloadUrl("");
     setWorkUploadProgress(0);
+  };
+
+  const refetchSubmissions = () => {
+    fetch("/api/submissions")
+      .then((res) => res.json())
+      .then((data) => setSubmissions(data.submissions || []))
+      .catch(() => {});
   };
 
   const handleSubmit = async () => {
@@ -369,50 +366,53 @@ export default function SubmitPage() {
       return;
     }
 
-    setSubmitting(true);
-    setMessage("");
-
     if (!turnstileToken) {
       setMessage("请完成人机验证");
-      setSubmitting(false);
       return;
     }
 
-    const body: Record<string, unknown> = {
-      work_type: workType,
-      owner,
-      title,
-      description,
-      image_urls: imageUrls,
-      version,
-      completion_date: completionDate,
-      contact,
-      os,
-      tool,
-      source_url: sourceUrl,
-      download_url: downloadUrl,
-      turnstile_token: turnstileToken,
-    };
+    setSubmitting(true);
+    setMessage("");
 
-    if (editing && submitted) {
-      body.submissionId = submitted.id;
-    }
+    try {
+      const body: Record<string, unknown> = {
+        work_type: workType,
+        owner,
+        title,
+        description,
+        image_urls: imageUrls,
+        version,
+        completion_date: completionDate,
+        contact,
+        os,
+        tool,
+        source_url: sourceUrl,
+        download_url: downloadUrl,
+        turnstile_token: turnstileToken,
+      };
 
-    const res = await fetch("/api/submissions", {
-      method: editing ? "PATCH" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      setMessage(editing ? "修改成功！" : "提交成功！");
-      if (editing) {
-        setEditing(false);
+      if (editing && submitted) {
+        body.submissionId = submitted.id;
       }
-      fetchSubmissions();
-    } else {
-      const err = await res.json();
-      setMessage(err.error || (editing ? "修改失败" : "提交失败"));
+
+      const res = await fetch("/api/submissions", {
+        method: editing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        setMessage(editing ? "修改成功！" : "提交成功！");
+        if (editing) {
+          setEditing(false);
+        }
+        refetchSubmissions();
+      } else {
+        const err = await res.json();
+        setMessage(err.error || (editing ? "修改失败" : "提交失败"));
+      }
+    } catch {
+      setMessage("网络错误，请检查网络连接后重试");
     }
 
     setSubmitting(false);
@@ -692,7 +692,7 @@ export default function SubmitPage() {
                 type="button"
                 variant={uploadMode === "file" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setUploadMode("file")}
+                onClick={() => { setUploadMode("file"); if (!uploadedFile) setDownloadUrl(""); }}
               >
                 <FileUp className="size-4 mr-1" />
                 在线上传
@@ -701,7 +701,7 @@ export default function SubmitPage() {
                 type="button"
                 variant={uploadMode === "link" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setUploadMode("link")}
+                onClick={() => { setUploadMode("link"); setDownloadUrl(""); }}
               >
                 <Link2 className="size-4 mr-1" />
                 填写网盘链接

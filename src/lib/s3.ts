@@ -12,6 +12,9 @@ let _client: S3Client | null = null;
 
 export function getS3Client(): S3Client {
   if (!_client) {
+    if (!S3_ENDPOINT || !S3_ACCESS_KEY || !S3_SECRET_KEY || !S3_BUCKET) {
+      throw new Error("S3 环境变量未配置（S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET）");
+    }
     _client = new S3Client({
       region: S3_REGION,
       endpoint: S3_ENDPOINT,
