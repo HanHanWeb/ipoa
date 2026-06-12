@@ -70,5 +70,6 @@ export function getKeyFromUrl(url: string): string | null {
 }
 
 export function isS3FileUrl(url: string): boolean {
-  return url.includes("ipoa_upload/");
+  if (S3_PUBLIC_URL && url.startsWith(S3_PUBLIC_URL)) return true;
+  return url.includes("rains3.com/") && !url.includes("rains3.com/ipoa_upload/");
 }

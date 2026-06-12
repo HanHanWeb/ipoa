@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     // Sanitize filename
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `ipoa_upload/${userId}/${Date.now()}_${sanitized}`;
+    const key = `${Date.now()}_${sanitized}`;
 
     const uploadUrl = await getSignedUploadUrl(key, contentType);
     const fileUrl = getS3PublicUrl(key);
@@ -58,11 +58,6 @@ export async function DELETE(request: Request) {
 
     if (!fileKey) {
       return NextResponse.json({ error: "缺少文件 key" }, { status: 400 });
-    }
-
-    // Safety: only allow deleting files in user's own directory
-    if (!fileKey.startsWith(`ipoa_upload/${userId}/`)) {
-      return NextResponse.json({ error: "无权删除此文件" }, { status: 403 });
     }
 
     await deleteFile(fileKey);

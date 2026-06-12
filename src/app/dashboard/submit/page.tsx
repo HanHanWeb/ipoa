@@ -468,7 +468,7 @@ export default function SubmitPage() {
                     setTool(submitted.tool || "");
                     setSourceUrl(submitted.source_url || "");
                     setDownloadUrl(submitted.download_url || "");
-                    if (submitted.download_url?.includes("ipoa_upload/")) {
+                    if (submitted.download_url?.includes("rains3.com/")) {
                       setUploadMode("file");
                       const parts = submitted.download_url.split("/");
                       const fileName = parts[parts.length - 1]?.replace(/^\d+_/, "") || "文件";
@@ -550,7 +550,7 @@ export default function SubmitPage() {
               <div>
                 <Label className="text-sm text-muted-foreground">作品文件</Label>
                 <p className="mt-1">
-                  {submitted.download_url.includes("ipoa_upload/") ? (
+                  {submitted.download_url.includes("rains3.com/") ? (
                     <a href={submitted.download_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-primary underline">
                       <File className="size-4" />
                       下载文件
