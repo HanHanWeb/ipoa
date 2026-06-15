@@ -65,6 +65,7 @@ interface Submission {
   tool: string;
   source_url: string;
   download_url: string;
+  work_note: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -86,6 +87,7 @@ export default function SubmitPage() {
   const [os, setOs] = useState("");
   const [tool, setTool] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
+  const [workNote, setWorkNote] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -392,6 +394,7 @@ export default function SubmitPage() {
         tool,
         source_url: sourceUrl,
         download_url: downloadUrl,
+        work_note: workNote,
         turnstile_token: turnstileToken,
       };
 
@@ -506,6 +509,7 @@ export default function SubmitPage() {
                     setOs(submitted.os || "");
                     setTool(submitted.tool || "");
                     setSourceUrl(submitted.source_url || "");
+                    setWorkNote(submitted.work_note || "");
                     setDownloadUrl(submitted.download_url || "");
                     if (submitted.download_url?.includes("rains3.com/")) {
                       setUploadMode("file");
@@ -586,6 +590,13 @@ export default function SubmitPage() {
               <Label className="text-sm text-muted-foreground">作品简介</Label>
               <p className="mt-1">{submitted.description || "未填写"}</p>
             </div>
+
+            {submitted.work_note && (
+              <div>
+                <Label className="text-sm text-muted-foreground">作品说明</Label>
+                <p className="mt-1 whitespace-pre-wrap">{submitted.work_note}</p>
+              </div>
+            )}
 
             {submitted.download_url && (
               <div>
@@ -712,7 +723,10 @@ export default function SubmitPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label className="text-sm">作品文件 <span className="text-red-500">*</span></Label>
+            <div>
+              <Label className="text-sm">作品文件 <span className="text-red-500">*</span></Label>
+              <p className="mt-1 text-xs text-muted-foreground">如有额外字体请随作品一并打包提交，避免作品打开异常、字体缺失问题。</p>
+            </div>
             <div className="flex gap-2 mb-2">
               <Button
                 type="button"
@@ -803,6 +817,19 @@ export default function SubmitPage() {
                 onChange={(e) => setDownloadUrl(e.target.value)}
               />
             )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div>
+              <Label className="text-sm">作品说明</Label>
+              <p className="mt-1 text-xs text-muted-foreground">同步提交作品说明文档以辅助评委快速理解作品创作思路与设计理念（可选）</p>
+            </div>
+            <Textarea
+              placeholder="请输入作品创作思路与设计理念"
+              value={workNote}
+              onChange={(e) => setWorkNote(e.target.value)}
+              rows={4}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">

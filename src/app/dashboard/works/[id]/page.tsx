@@ -38,6 +38,7 @@ interface WorkDetail {
   tool: string;
   source_url: string;
   download_url: string;
+  work_note: string;
   user_name: string;
   user_email: string;
   user_avatar: string;
@@ -327,6 +328,13 @@ export default function WorkDetailPage() {
                 <p className="text-sm text-muted-foreground">作品简介</p>
                 <p className="mt-1 text-sm">{work.description}</p>
               </div>
+
+              {work.work_note && (
+                <div>
+                  <p className="text-sm text-muted-foreground">作品说明</p>
+                  <p className="mt-1 text-sm whitespace-pre-wrap">{work.work_note}</p>
+                </div>
+              )}
 
               <div>
                 <p className="text-sm text-muted-foreground">作品图片</p>
