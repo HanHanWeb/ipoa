@@ -76,6 +76,7 @@ export default function WorkDetailPage() {
   const [scoreLoading, setScoreLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [isPublicStage, setIsPublicStage] = useState(false);
+  const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const [selectedScore, setSelectedScore] = useState<Score | null>(null);
   const [finalScore, setFinalScore] = useState<number | null>(null);
   const [finalScoreInput, setFinalScoreInput] = useState("");
@@ -125,6 +126,13 @@ export default function WorkDetailPage() {
         const resultDate = new Date(settingsData.stage_result_start);
         if (!isNaN(resultDate.getTime()) && new Date() >= resultDate) {
           setIsPublicStage(true);
+        }
+      }
+
+      if (settingsData.stage_review_start) {
+        const reviewDate = new Date(settingsData.stage_review_start);
+        if (!isNaN(reviewDate.getTime()) && new Date() >= reviewDate) {
+          setReviewStageStarted(true);
         }
       }
 
@@ -406,6 +414,9 @@ export default function WorkDetailPage() {
                     {canScore && (
                     <div className="space-y-3 rounded-md border p-4">
                       <p className="text-sm font-medium">我的打分</p>
+                      {!reviewStageStarted && (
+                        <p className="text-sm text-muted-foreground">评审尚未开始，请在评审开始后再进行打分。</p>
+                      )}
                       <div className="space-y-3">
                         <div className="w-24 space-y-1">
                           <Label htmlFor="my-score" className="text-xs">分数 (0-100)</Label>
@@ -422,7 +433,7 @@ export default function WorkDetailPage() {
                                 setMyScore(val);
                               }
                             }}
-                            disabled={isPublicStage}
+                            disabled={isPublicStage || !reviewStageStarted}
                             placeholder="0-100 整数"
                           />
                         </div>
@@ -432,7 +443,7 @@ export default function WorkDetailPage() {
                             id="my-comment"
                             value={myComment}
                             onChange={(e) => setMyComment(e.target.value)}
-                            disabled={isPublicStage}
+                            disabled={isPublicStage || !reviewStageStarted}
                             placeholder="输入评语（可选）"
                             rows={3}
                           />
@@ -440,7 +451,7 @@ export default function WorkDetailPage() {
                         <Button
                           size="sm"
                           onClick={handleSubmitScore}
-                          disabled={scoring || isPublicStage || !myScore}
+                          disabled={scoring || isPublicStage || !reviewStageStarted || !myScore}
                         >
                           {scoring ? "提交中..." : "提交打分"}
                         </Button>

@@ -102,6 +102,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "仅评委可打分" }, { status: 403 });
     }
 
+    // Check if review stage has started
+    const stageReview = await getDb().execute({
+      sql: "SELECT value FROM settings WHERE key = 'stage_review_start'",
+      args: [],
+    });
+    if (stageReview.rows.length > 0) {
+      const reviewDate = new Date(stageReview.rows[0].value as string);
+      if (!isNaN(reviewDate.getTime()) && new Date() < reviewDate) {
+        return NextResponse.json({ error: "评审尚未开始，无法打分" }, { status: 400 });
+      }
+    }
+
     // Check if in result announcement stage (scoring disabled)
     const stageResult = await getDb().execute({
       sql: "SELECT value FROM settings WHERE key = 'stage_result_start'",
