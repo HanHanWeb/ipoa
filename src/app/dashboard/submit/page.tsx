@@ -435,6 +435,7 @@ export default function SubmitPage() {
         }
 
         refetchSubmissions();
+        return;
       } else {
         const err = await res.json();
         setMessage(err.error || (editing ? "修改失败" : "提交失败"));
