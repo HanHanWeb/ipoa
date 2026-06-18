@@ -377,6 +377,7 @@ export default function SubmitPage() {
       return;
     }
 
+    setDialogOpen(false);
     setSubmitting(true);
     setMessage("");
 
