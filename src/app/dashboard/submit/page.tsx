@@ -377,7 +377,6 @@ export default function SubmitPage() {
       return;
     }
 
-    setDialogOpen(false);
     setSubmitting(true);
     setMessage("");
 
@@ -410,6 +409,7 @@ export default function SubmitPage() {
       });
 
       if (res.ok) {
+        setDialogOpen(false);
         setMessage(editing ? "修改成功！" : "提交成功！");
 
         // Clean up orphaned files after successful edit
