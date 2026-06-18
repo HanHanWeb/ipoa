@@ -434,7 +434,7 @@ export default function WorkDetailPage() {
                               }
                             }}
                             disabled={isPublicStage || !reviewStageStarted}
-                            placeholder="0-100 整数"
+                            placeholder="0~100"
                           />
                         </div>
                         <div className="space-y-1">
