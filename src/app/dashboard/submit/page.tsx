@@ -647,9 +647,9 @@ export default function SubmitPage() {
         </Card>
 
           {/* 审核记录 */}
-          <Card className="w-full lg:w-80 shrink-0">
+          <Card className="w-full lg:w-96 shrink-0">
             <CardHeader>
-              <CardTitle className="text-base">审核记录</CardTitle>
+              <CardTitle className="text-base">参赛进度</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="relative pl-6">
