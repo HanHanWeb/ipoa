@@ -66,6 +66,7 @@ interface Submission {
   source_url: string;
   download_url: string;
   work_note: string;
+  final_score: number | null;
 }
 
 function formatFileSize(bytes: number): string {
@@ -103,6 +104,7 @@ export default function SubmitPage() {
   const workFileRef = useRef<HTMLInputElement>(null);
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const [stageUploadStarted, setStageUploadStarted] = useState(false);
+  const [resultStageStarted, setResultStageStarted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [noticeDialogOpen, setNoticeDialogOpen] = useState(false);
@@ -132,6 +134,8 @@ export default function SubmitPage() {
         setReviewStageStarted(reviewStart ? now >= reviewStart : false);
         const uploadStart = settingsData.stage_upload_start ? new Date(settingsData.stage_upload_start) : null;
         setStageUploadStarted(uploadStart ? now >= uploadStart : false);
+        const resultStart = settingsData.stage_result_start ? new Date(settingsData.stage_result_start) : null;
+        setResultStageStarted(resultStart ? now >= resultStart : false);
       })
       .catch(() => {})
       .finally(() => setPageLoading(false));
@@ -481,13 +485,16 @@ export default function SubmitPage() {
       urls = [submitted.image_url];
     }
 
+    const reviewComplete = submitted.final_score !== null;
+
     return (
       <div className="space-y-6">
         <PageTitle title="作品提交" />
         <h1 className="text-2xl font-semibold">作品提交</h1>
 
-        <Card>
-          <CardHeader>
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <Card className="flex-1 min-w-0">
+            <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Upload className="size-5" />
               已提交作品
@@ -638,6 +645,66 @@ export default function SubmitPage() {
             </p>
           </CardContent>
         </Card>
+
+          {/* 审核记录 */}
+          <Card className="w-full lg:w-80 shrink-0">
+            <CardHeader>
+              <CardTitle className="text-base">审核记录</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative pl-6">
+                {/* 竖线 */}
+                <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
+
+                <div className="space-y-6">
+                  {/* 作品已提交 */}
+                  <div className="relative">
+                    <div className="absolute -left-6 top-1 size-3.5 rounded-full border-2 bg-primary border-primary" />
+                    <div>
+                      <p className="font-medium text-sm">作品已提交</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {submitted.created_at ? new Date(submitted.created_at).toLocaleString("zh-CN") : ""}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">您的参赛作品已成功提交，我们将尽快审核。</p>
+                    </div>
+                  </div>
+
+                  {/* 评审中 */}
+                  <div className="relative">
+                    <div className={`absolute -left-6 top-1 size-3.5 rounded-full border-2 ${reviewStageStarted ? "bg-primary border-primary" : "bg-background border-muted-foreground/30"}`} />
+                    <div>
+                      <p className={`font-medium text-sm ${reviewStageStarted ? "" : "text-muted-foreground"}`}>评审中</p>
+                      {reviewStageStarted && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          评委正在评审您的报名信息，请耐心等待。
+                        </p>
+                      )}
+                      {!reviewStageStarted && (
+                        <p className="text-xs text-muted-foreground mt-1">等待评审开始</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 评审完成 */}
+                  <div className="relative">
+                    <div className={`absolute -left-6 top-1 size-3.5 rounded-full border-2 ${reviewComplete ? "bg-primary border-primary" : "bg-background border-muted-foreground/30"}`} />
+                    <div>
+                      <p className={`font-medium text-sm ${reviewComplete ? "" : "text-muted-foreground"}`}>评审完成</p>
+                      {reviewComplete && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          恭喜！您的参赛作品已完成评审。
+                        </p>
+                      )}
+                      {!reviewComplete && (
+                        <p className="text-xs text-muted-foreground mt-1">评审进行中</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
