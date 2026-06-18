@@ -225,7 +225,7 @@ export default function SubmitPage() {
           } catch {
             errMsg = `服务器返回错误 (${presignRes.status})`;
           }
-          setMessage(`"${file.name}" ${errMsg}，已成功上传 ${successCount} 张`);
+          setMessage(`"${file.name}" ${errMsg}，已成功上传 ${successCount} 张，请检查文件格式或大小后重新上传`);
           setUploading(false);
           if (fileRef.current) fileRef.current.value = "";
           return;
@@ -241,14 +241,14 @@ export default function SubmitPage() {
             body: file,
           });
         } catch {
-          setMessage(`"${file.name}" 上传失败，已成功上传 ${successCount} 张`);
+          setMessage(`"${file.name}" 上传失败，已成功上传 ${successCount} 张，请检查文件格式或大小后重新上传`);
           setUploading(false);
           if (fileRef.current) fileRef.current.value = "";
           return;
         }
 
         if (!cosRes.ok) {
-          setMessage(`"${file.name}" 上传失败 (${cosRes.status})，已成功上传 ${successCount} 张`);
+          setMessage(`"${file.name}" 上传失败 (${cosRes.status})，已成功上传 ${successCount} 张，请检查文件格式或大小后重新上传`);
           setUploading(false);
           if (fileRef.current) fileRef.current.value = "";
           return;
@@ -260,7 +260,7 @@ export default function SubmitPage() {
 
       setMessage(`成功上传 ${successCount} 张图片`);
     } catch (err) {
-      setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}`);
+      setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}，请检查文件格式或大小后重新上传`);
     }
 
     setUploading(false);
@@ -334,7 +334,7 @@ export default function SubmitPage() {
       setDownloadUrl(data.fileUrl);
       setMessage("");
     } catch (err) {
-      setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}`);
+      setMessage(`上传出错：${err instanceof Error ? err.message : "未知错误"}，请检查文件格式或大小后重新上传`);
     }
 
     setWorkUploading(false);
