@@ -95,6 +95,7 @@ export default function SubmitPage() {
   const [message, setMessage] = useState("");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [uploadMode, setUploadMode] = useState<"file" | "link">("file");
@@ -411,6 +412,7 @@ export default function SubmitPage() {
       if (res.ok) {
         setDialogOpen(false);
         setSubmitting(false);
+        setSubmitSuccess(true);
         setMessage(editing ? "修改成功！" : "提交成功！");
 
         // Clean up orphaned files after successful edit
@@ -522,6 +524,7 @@ export default function SubmitPage() {
                   className="ml-auto"
                   onClick={() => {
                     setEditing(true);
+                    setSubmitSuccess(false);
                     setWorkType(submitted.work_type || "");
                     setOwner(submitted.owner || "");
                     setTitle(submitted.title || "");
@@ -1062,7 +1065,7 @@ export default function SubmitPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <AlertDialog open={dialogOpen} onOpenChange={(open) => { if (!open || !submitSuccess) setDialogOpen(open); }}>
               <AlertDialogTrigger
                 render={
                   <Button disabled={submitting || imageUrls.length === 0 || !hcaptchaToken} />
