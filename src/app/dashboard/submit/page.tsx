@@ -105,11 +105,13 @@ export default function SubmitPage() {
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const [stageUploadStarted, setStageUploadStarted] = useState(false);
   const [resultStageStarted, setResultStageStarted] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
+  // const [turnstileToken, setTurnstileToken] = useState("");
+  const [hcaptchaToken, setHcaptchaToken] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [noticeDialogOpen, setNoticeDialogOpen] = useState(false);
   const [noticeRead, setNoticeRead] = useState(false);
-  const turnstileRef = useRef<HTMLDivElement>(null);
+  // const turnstileRef = useRef<HTMLDivElement>(null);
+  const hcaptchaRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const originalImageUrls = useRef<string[]>([]);
   const originalDownloadUrl = useRef<string>("");
@@ -142,41 +144,66 @@ export default function SubmitPage() {
   }, []);
 
   // Load Turnstile script - only when form is visible
-  useEffect(() => {
-    // Don't render Turnstile if page is loading or if already submitted (not editing)
-    if (pageLoading || (hasSubmitted && !editing)) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (pageLoading || (hasSubmitted && !editing)) return;
+  //   const scriptId = "turnstile-script";
+  //   let rendered = false;
+  //   const tryRender = () => {
+  //     if (rendered) return;
+  //     const w = window as unknown as { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => void } };
+  //     if (w.turnstile && turnstileRef.current && turnstileRef.current.children.length === 0) {
+  //       rendered = true;
+  //       w.turnstile.render(turnstileRef.current, {
+  //         sitekey: "0x4AAAAAADI34BpAkqXgFVaA",
+  //         callback: (token: string) => setTurnstileToken(token),
+  //       });
+  //     }
+  //   };
+  //   if (document.getElementById(scriptId)) {
+  //     setTimeout(tryRender, 200);
+  //     return;
+  //   }
+  //   const script = document.createElement("script");
+  //   script.id = scriptId;
+  //   script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+  //   script.async = true;
+  //   script.defer = true;
+  //   script.onload = () => { setTimeout(tryRender, 200); };
+  //   document.head.appendChild(script);
+  // }, [pageLoading, hasSubmitted, editing]);
 
-    const scriptId = "turnstile-script";
+  // Load hCaptcha script - only when form is visible
+  useEffect(() => {
+    if (pageLoading || (hasSubmitted && !editing)) return;
+
+    const scriptId = "hcaptcha-script";
     let rendered = false;
-    
+
     const tryRender = () => {
       if (rendered) return;
-      const w = window as unknown as { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => void } };
-      if (w.turnstile && turnstileRef.current && turnstileRef.current.children.length === 0) {
+      const w = window as unknown as { hcaptcha?: { render: (el: HTMLElement, opts: Record<string, unknown>) => number } };
+      if (w.hcaptcha && hcaptchaRef.current && hcaptchaRef.current.children.length === 0) {
         rendered = true;
-        w.turnstile.render(turnstileRef.current, {
-          sitekey: "0x4AAAAAADI34BpAkqXgFVaA",
-          callback: (token: string) => setTurnstileToken(token),
+        w.hcaptcha.render(hcaptchaRef.current, {
+          sitekey: "f63e7eec-03b0-48e6-b276-40f8b1844e6a",
+          callback: (token: string) => setHcaptchaToken(token),
+          "expired-callback": () => setHcaptchaToken(""),
+          "error-callback": () => setHcaptchaToken(""),
         });
       }
     };
 
     if (document.getElementById(scriptId)) {
-      // Script already loaded, try rendering after a short delay
       setTimeout(tryRender, 200);
       return;
     }
 
     const script = document.createElement("script");
     script.id = scriptId;
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.src = "https://js.hcaptcha.com/1/api.js?render=explicit";
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      setTimeout(tryRender, 200);
-    };
+    script.onload = () => { setTimeout(tryRender, 200); };
     document.head.appendChild(script);
   }, [pageLoading, hasSubmitted, editing]);
 
@@ -376,7 +403,7 @@ export default function SubmitPage() {
       return;
     }
 
-    if (!turnstileToken) {
+    if (!hcaptchaToken) {
       setMessage("请完成人机验证");
       return;
     }
@@ -399,7 +426,8 @@ export default function SubmitPage() {
         source_url: sourceUrl,
         download_url: downloadUrl,
         work_note: workNote,
-        turnstile_token: turnstileToken,
+        // turnstile_token: turnstileToken,
+        hcaptcha_token: hcaptchaToken,
       };
 
       if (editing && submitted) {
@@ -1041,14 +1069,15 @@ export default function SubmitPage() {
           </div>
 
           <div className="flex justify-start py-2">
-            <div ref={turnstileRef} />
+            {/* <div ref={turnstileRef} /> */}
+            <div ref={hcaptchaRef} />
           </div>
 
           <div className="flex items-center gap-3">
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <AlertDialogTrigger
                 render={
-                  <Button disabled={submitting || imageUrls.length === 0 || !turnstileToken} />
+                  <Button disabled={submitting || imageUrls.length === 0 || !hcaptchaToken} />
                 }
               >
                 <Upload className="mr-1 size-4" />

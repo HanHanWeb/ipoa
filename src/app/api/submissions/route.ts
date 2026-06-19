@@ -14,14 +14,33 @@ async function getSetting(key: string, defaultValue: string): Promise<string> {
   }
 }
 
-async function verifyTurnstile(token: string): Promise<boolean> {
+// async function verifyTurnstile(token: string): Promise<boolean> {
+//   try {
+//     const secret = process.env.TURNSTILE_SECRET_KEY;
+//     if (!secret) {
+//       console.error("TURNSTILE_SECRET_KEY not configured");
+//       return false;
+//     }
+//     const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: `secret=${secret}&response=${token}`,
+//     });
+//     const data = await res.json();
+//     return data.success === true;
+//   } catch {
+//     return false;
+//   }
+// }
+
+async function verifyHCaptcha(token: string): Promise<boolean> {
   try {
-    const secret = process.env.TURNSTILE_SECRET_KEY;
+    const secret = process.env.HCAPTCHA_SECRET_KEY;
     if (!secret) {
-      console.error("TURNSTILE_SECRET_KEY not configured");
+      console.error("HCAPTCHA_SECRET_KEY not configured");
       return false;
     }
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    const res = await fetch("https://api.hcaptcha.com/siteverify", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: `secret=${secret}&response=${token}`,
@@ -126,10 +145,10 @@ export async function POST(request: Request) {
     await initDb();
     await ensureSubmissionsTable();
 
-    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url, work_note, turnstile_token } = await request.json();
+    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url, work_note, hcaptcha_token } = await request.json();
 
-    // Verify Turnstile
-    if (!turnstile_token || !(await verifyTurnstile(turnstile_token))) {
+    // Verify hCaptcha
+    if (!hcaptcha_token || !(await verifyHCaptcha(hcaptcha_token))) {
       return NextResponse.json({ error: "人机验证失败" }, { status: 400 });
     }
 
@@ -168,10 +187,10 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "评审已开始，无法修改作品" }, { status: 400 });
     }
 
-    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url, work_note, turnstile_token } = await request.json();
+    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_url, download_url, work_note, hcaptcha_token } = await request.json();
 
-    // Verify Turnstile
-    if (!turnstile_token || !(await verifyTurnstile(turnstile_token))) {
+    // Verify hCaptcha
+    if (!hcaptcha_token || !(await verifyHCaptcha(hcaptcha_token))) {
       return NextResponse.json({ error: "人机验证失败" }, { status: 400 });
     }
 
