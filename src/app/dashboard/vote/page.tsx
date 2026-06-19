@@ -4,14 +4,13 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/page-title";
+import { ThumbsUp } from "lucide-react";
 
 interface VoteWork {
   id: number;
   title: string;
-  owner: string;
   images: string[];
   work_type: string;
-  description: string;
   os: string;
   tool: string;
   vote_count: number;
@@ -33,11 +32,20 @@ function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
     return () => clearInterval(timer);
   }, [images.length]);
 
+  if (images.length === 0) {
+    return (
+      <div className="aspect-square bg-muted flex items-center justify-center text-muted-foreground text-sm">
+        暂无图片
+      </div>
+    );
+  }
+
   return (
     <div className="aspect-square bg-muted overflow-hidden relative">
       <img
         src={images[current]}
         alt={alt}
+        crossOrigin="anonymous"
         className={`w-full h-full object-cover transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}
       />
       {images.length > 1 && (
@@ -114,7 +122,6 @@ export default function VotePage() {
               <div className="aspect-square bg-muted animate-pulse" />
               <div className="p-3 space-y-2">
                 <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
-                <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
                 <div className="h-3 w-full bg-muted animate-pulse rounded" />
               </div>
             </div>
@@ -145,10 +152,6 @@ export default function VotePage() {
             <ImageCarousel images={work.images} alt={work.title} />
             <div className="p-3 space-y-2">
               <p className="font-medium text-sm truncate">{work.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{work.owner}</p>
-              {work.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2">{work.description}</p>
-              )}
               <div className="flex flex-wrap gap-1">
                 {work.work_type && (
                   <Badge variant="secondary" className="text-xs">{work.work_type}</Badge>
@@ -171,6 +174,7 @@ export default function VotePage() {
                   onClick={() => handleVote(work.id)}
                   className="h-7 px-2 text-xs"
                 >
+                  <ThumbsUp className="size-3.5 mr-1" />
                   {voting === work.id
                     ? "投票中..."
                     : votedSubmissionId === work.id
