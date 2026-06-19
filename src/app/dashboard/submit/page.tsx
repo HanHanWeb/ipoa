@@ -105,12 +105,10 @@ export default function SubmitPage() {
   const [reviewStageStarted, setReviewStageStarted] = useState(false);
   const [stageUploadStarted, setStageUploadStarted] = useState(false);
   const [resultStageStarted, setResultStageStarted] = useState(false);
-  // const [turnstileToken, setTurnstileToken] = useState("");
   const [hcaptchaToken, setHcaptchaToken] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [noticeDialogOpen, setNoticeDialogOpen] = useState(false);
   const [noticeRead, setNoticeRead] = useState(false);
-  // const turnstileRef = useRef<HTMLDivElement>(null);
   const hcaptchaRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const originalImageUrls = useRef<string[]>([]);
@@ -142,35 +140,6 @@ export default function SubmitPage() {
       .catch(() => {})
       .finally(() => setPageLoading(false));
   }, []);
-
-  // Load Turnstile script - only when form is visible
-  // useEffect(() => {
-  //   if (pageLoading || (hasSubmitted && !editing)) return;
-  //   const scriptId = "turnstile-script";
-  //   let rendered = false;
-  //   const tryRender = () => {
-  //     if (rendered) return;
-  //     const w = window as unknown as { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => void } };
-  //     if (w.turnstile && turnstileRef.current && turnstileRef.current.children.length === 0) {
-  //       rendered = true;
-  //       w.turnstile.render(turnstileRef.current, {
-  //         sitekey: "0x4AAAAAADI34BpAkqXgFVaA",
-  //         callback: (token: string) => setTurnstileToken(token),
-  //       });
-  //     }
-  //   };
-  //   if (document.getElementById(scriptId)) {
-  //     setTimeout(tryRender, 200);
-  //     return;
-  //   }
-  //   const script = document.createElement("script");
-  //   script.id = scriptId;
-  //   script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-  //   script.async = true;
-  //   script.defer = true;
-  //   script.onload = () => { setTimeout(tryRender, 200); };
-  //   document.head.appendChild(script);
-  // }, [pageLoading, hasSubmitted, editing]);
 
   // Load hCaptcha script - only when form is visible
   useEffect(() => {
@@ -426,7 +395,6 @@ export default function SubmitPage() {
         source_url: sourceUrl,
         download_url: downloadUrl,
         work_note: workNote,
-        // turnstile_token: turnstileToken,
         hcaptcha_token: hcaptchaToken,
       };
 
@@ -1069,7 +1037,6 @@ export default function SubmitPage() {
           </div>
 
           <div className="flex justify-start py-2">
-            {/* <div ref={turnstileRef} /> */}
             <div ref={hcaptchaRef} />
           </div>
 
