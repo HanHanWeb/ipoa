@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/page-title";
 
 interface VoteWork {
@@ -16,6 +11,7 @@ interface VoteWork {
   owner: string;
   image_url: string;
   work_type: string;
+  description: string;
   vote_count: number;
 }
 
@@ -70,18 +66,18 @@ export default function VotePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <PageTitle title="人气之星投票" />
-        <h1 className="text-2xl font-semibold">人气之星投票</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <div className="aspect-[4/3] bg-muted animate-pulse rounded-t-lg" />
-              <CardContent className="p-4 space-y-2">
-                <div className="h-5 w-3/4 bg-muted animate-pulse rounded" />
-                <div className="h-4 w-1/2 bg-muted animate-pulse rounded" />
-              </CardContent>
-            </Card>
+        <h1 className="text-xl font-semibold">人气之星投票</h1>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="rounded-lg border overflow-hidden">
+              <div className="aspect-square bg-muted animate-pulse" />
+              <div className="p-2 space-y-1">
+                <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+                <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -89,37 +85,43 @@ export default function VotePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageTitle title="人气之星投票" />
-      <h1 className="text-2xl font-semibold">人气之星投票</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">人气之星投票</h1>
+        {!votingOpen && (
+          <p className="text-sm text-muted-foreground">投票暂未开放或已结束</p>
+        )}
+        {message && (
+          <p className={`text-sm ${message.includes("成功") ? "text-green-600" : "text-red-500"}`}>
+            {message}
+          </p>
+        )}
+      </div>
 
-      {!votingOpen && (
-        <p className="text-sm text-muted-foreground">投票暂未开放或已结束，请关注活动通知。</p>
-      )}
-
-      {message && (
-        <p className={`text-sm ${message.includes("成功") ? "text-green-600" : "text-red-500"}`}>
-          {message}
-        </p>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {works.map((work) => (
-          <Card key={work.id} className="overflow-hidden">
-            <div className="aspect-[4/3] bg-muted overflow-hidden">
+          <div key={work.id} className="rounded-lg border overflow-hidden hover:shadow-md transition-shadow">
+            <div className="aspect-square bg-muted overflow-hidden">
               <img
                 src={work.image_url}
                 alt={work.title}
                 className="w-full h-full object-cover"
               />
             </div>
-            <CardContent className="p-4 space-y-3">
-              <div>
-                <p className="font-medium truncate">{work.title}</p>
-                <p className="text-sm text-muted-foreground">{work.owner}</p>
+            <div className="p-2 space-y-1.5">
+              <div className="flex items-start justify-between gap-1">
+                <p className="font-medium text-sm truncate">{work.title}</p>
+                <Badge variant="secondary" className="shrink-0 text-xs">
+                  {work.work_type}
+                </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">
+              <p className="text-xs text-muted-foreground truncate">{work.owner}</p>
+              {work.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2">{work.description}</p>
+              )}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-sm font-semibold text-primary">
                   {work.vote_count} 票
                 </span>
                 <Button
@@ -127,6 +129,7 @@ export default function VotePage() {
                   variant={votedSubmissionId === work.id ? "default" : "outline"}
                   disabled={!votingOpen || voting !== null || votedSubmissionId !== null}
                   onClick={() => handleVote(work.id)}
+                  className="h-7 px-2 text-xs"
                 >
                   {voting === work.id
                     ? "投票中..."
@@ -135,13 +138,13 @@ export default function VotePage() {
                       : "投票"}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
       {works.length === 0 && (
-        <p className="text-center text-muted-foreground py-12">暂无参赛作品</p>
+        <p className="text-center text-muted-foreground py-8">暂无参赛作品</p>
       )}
     </div>
   );

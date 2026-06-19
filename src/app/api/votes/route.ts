@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
 
     // 获取每个作品的投票数
     const results = await getDb().execute(`
-      SELECT s.id, s.title, s.owner, s.image_url, s.work_type,
+      SELECT s.id, s.title, s.owner, s.image_url, s.work_type, s.description,
              COUNT(v.id) as vote_count
       FROM submissions s
       LEFT JOIN votes v ON v.submission_id = s.id
@@ -143,6 +143,7 @@ export async function GET(req: NextRequest) {
         owner: r.owner,
         image_url: r.image_url,
         work_type: r.work_type,
+        description: r.description,
         vote_count: r.vote_count,
       })),
       votedSubmissionId,
