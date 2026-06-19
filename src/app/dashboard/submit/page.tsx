@@ -104,6 +104,7 @@ export default function SubmitPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const originalImageUrls = useRef<string[]>([]);
   const originalDownloadUrl = useRef<string>("");
+  const noticeShownRef = useRef(false);
 
   const hasSubmitted = submissions.length > 0;
   const submitted = hasSubmitted ? submissions[0] : null;
@@ -116,7 +117,8 @@ export default function SubmitPage() {
       .then(([subData, settingsData]) => {
         const subs = subData.submissions || [];
         setSubmissions(subs);
-        if (subs.length === 0) {
+        if (subs.length === 0 && !noticeShownRef.current) {
+          noticeShownRef.current = true;
           setNoticeDialogOpen(true);
         }
 
