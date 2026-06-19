@@ -371,8 +371,8 @@ export default function SubmitPage() {
       setMessage("请填写所有必填字段");
       return;
     }
-    if ((workType === "临摹" || workType === "改编") && !sourceUrl.trim()) {
-      setMessage("临摹/改编作品请填写原作品出处");
+    if (workType === "改编" && !sourceUrl.trim()) {
+      setMessage("改编作品请填写原作品出处");
       return;
     }
 
@@ -451,7 +451,7 @@ export default function SubmitPage() {
     setSubmitting(false);
   };
 
-  const needsSourceUrl = workType === "临摹" || workType === "改编";
+  const needsSourceUrl = workType === "改编";
 
   // If already submitted and not editing, show the submitted data
   if (pageLoading) {
@@ -581,7 +581,7 @@ export default function SubmitPage() {
                 <Label className="text-sm text-muted-foreground">使用工具</Label>
                 <p className="mt-1">{submitted.tool || "未填写"}</p>
               </div>
-              {(submitted.work_type === "临摹" || submitted.work_type === "改编") && (
+              {submitted.work_type === "改编" && (
                 <div className="sm:col-span-2">
                   <Label className="text-sm text-muted-foreground">原作品出处</Label>
                   <p className="mt-1">
@@ -747,7 +747,6 @@ export default function SubmitPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="原创">原创</SelectItem>
-                <SelectItem value="临摹">临摹</SelectItem>
                 <SelectItem value="改编">改编</SelectItem>
               </SelectContent>
             </Select>
