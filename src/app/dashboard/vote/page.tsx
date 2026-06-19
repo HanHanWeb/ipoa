@@ -78,6 +78,8 @@ export default function VotePage() {
   const [voting, setVoting] = useState<number | null>(null);
   const [votedSubmissionId, setVotedSubmissionId] = useState<number | null>(null);
   const [votingOpen, setVotingOpen] = useState(true);
+  const [voteEnd, setVoteEnd] = useState("");
+  const [countdown, setCountdown] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"success" | "error">("success");
   const [dialogMessage, setDialogMessage] = useState("");
@@ -95,6 +97,7 @@ export default function VotePage() {
       setWorks(data.works || []);
       setVotedSubmissionId(data.votedSubmissionId);
       setVotingOpen(data.votingOpen);
+      setVoteEnd(data.voteEnd || "");
     } catch {
       showDialog("加载投票数据失败", "error");
     } finally {
@@ -105,6 +108,33 @@ export default function VotePage() {
   useEffect(() => {
     fetchVotes();
   }, [fetchVotes]);
+
+  useEffect(() => {
+    if (!voteEnd) return;
+    const updateCountdown = () => {
+      const end = new Date(voteEnd).getTime();
+      const now = Date.now();
+      if (now >= end) {
+        setCountdown("投票已结束");
+        return;
+      }
+      const diff = end - now;
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      if (days > 0) {
+        setCountdown(`剩余 ${days}天 ${hours}时 ${minutes}分 ${seconds}秒`);
+      } else if (hours > 0) {
+        setCountdown(`剩余 ${hours}时 ${minutes}分 ${seconds}秒`);
+      } else {
+        setCountdown(`剩余 ${minutes}分 ${seconds}秒`);
+      }
+    };
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [voteEnd]);
 
   const handleVote = async (submissionId: number) => {
     setVoting(submissionId);
@@ -155,8 +185,8 @@ export default function VotePage() {
       <PageTitle title="人气之星投票" />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">人气之星投票</h1>
-        {!votingOpen && (
-          <p className="text-sm text-muted-foreground">投票暂未开放或已结束</p>
+        {countdown && (
+          <span className="text-sm text-muted-foreground">{countdown}</span>
         )}
       </div>
 

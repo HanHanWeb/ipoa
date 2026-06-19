@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 
+async function getSetting(key: string, fallback: string): Promise<string> {
+  await getDb().execute(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+  const result = await getDb().execute({
+    sql: "SELECT value FROM settings WHERE key = ?",
+    args: [key],
+  });
+  return result.rows.length > 0 ? (result.rows[0].value as string) : fallback;
+}
+
 async function ensureVotesTable() {
   await getDb().execute(`
     CREATE TABLE IF NOT EXISTS votes (
@@ -135,6 +144,7 @@ export async function GET(req: NextRequest) {
     }
 
     const voting = await isVotingOpen();
+    const voteEnd = await getSetting("vote_end", "");
 
     return NextResponse.json({
       works: results.rows.map((r) => {
@@ -159,6 +169,7 @@ export async function GET(req: NextRequest) {
       }),
       votedSubmissionId,
       votingOpen: voting.open,
+      voteEnd,
     });
   } catch (err) {
     console.error("Get votes error:", err);
