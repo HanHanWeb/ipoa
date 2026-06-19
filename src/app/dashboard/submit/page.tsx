@@ -52,7 +52,7 @@ interface Submission {
   contact: string;
   os: string;
   tool: string;
-  source_url: string;
+  source_name: string;
   download_url: string;
   work_note: string;
   final_score: number | null;
@@ -76,7 +76,7 @@ export default function SubmitPage() {
   const [contact, setContact] = useState("");
   const [os, setOs] = useState("");
   const [tool, setTool] = useState("");
-  const [sourceUrl, setSourceUrl] = useState("");
+  const [sourceName, setSourceName] = useState("");
   const [workNote, setWorkNote] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -356,8 +356,8 @@ export default function SubmitPage() {
       setMessage("请填写所有必填字段");
       return;
     }
-    if (workType === "改编" && !sourceUrl.trim()) {
-      setMessage("改编作品请填写原作品出处");
+    if (workType === "改编" && !sourceName.trim()) {
+      setMessage("改编作品请填写原作品名称");
       return;
     }
 
@@ -381,7 +381,7 @@ export default function SubmitPage() {
         contact,
         os,
         tool,
-        source_url: sourceUrl,
+        source_name: sourceName,
         download_url: downloadUrl,
         work_note: workNote,
         hcaptcha_token: hcaptchaToken,
@@ -438,7 +438,7 @@ export default function SubmitPage() {
           contact,
           os,
           tool,
-          source_url: sourceUrl,
+          source_name: sourceName,
           download_url: downloadUrl,
           work_note: workNote,
           final_score: submitted?.final_score ?? null,
@@ -470,7 +470,7 @@ export default function SubmitPage() {
     setSubmitting(false);
   };
 
-  const needsSourceUrl = workType === "改编";
+  const needsSourceName = workType === "改编";
 
   // If already submitted and not editing, show the submitted data
   if (pageLoading) {
@@ -536,7 +536,7 @@ export default function SubmitPage() {
                     setContact(submitted.contact || "");
                     setOs(submitted.os || "");
                     setTool(submitted.tool || "");
-                    setSourceUrl(submitted.source_url || "");
+                    setSourceName(submitted.source_name || "");
                     setWorkNote(submitted.work_note || "");
                     setDownloadUrl(submitted.download_url || "");
                     if (submitted.download_url?.includes("rains3.com/")) {
@@ -602,14 +602,8 @@ export default function SubmitPage() {
               </div>
               {submitted.work_type === "改编" && (
                 <div className="sm:col-span-2">
-                  <Label className="text-sm text-muted-foreground">原作品出处</Label>
-                  <p className="mt-1">
-                    {submitted.source_url ? (
-                      <a href={submitted.source_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                        {submitted.source_url}
-                      </a>
-                    ) : "未填写"}
-                  </p>
+                  <Label className="text-sm text-muted-foreground">原作品名称</Label>
+                  <p className="mt-1">{submitted.source_name || "未填写"}</p>
                 </div>
               )}
             </div>
@@ -771,13 +765,13 @@ export default function SubmitPage() {
             </Select>
           </div>
 
-          {needsSourceUrl && (
+          {needsSourceName && (
             <div className="flex flex-col gap-1.5">
-              <Label className="text-sm">原作品出处 <span className="text-red-500">*</span></Label>
+              <Label className="text-sm">原作品名称 <span className="text-red-500">*</span></Label>
               <Input
-                placeholder="请输入原作品链接"
-                value={sourceUrl}
-                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="填写作品原型名称"
+                value={sourceName}
+                onChange={(e) => setSourceName(e.target.value)}
               />
             </div>
           )}

@@ -36,7 +36,7 @@ interface WorkDetail {
   contact: string;
   os: string;
   tool: string;
-  source_url: string;
+  source_name: string;
   download_url: string;
   work_note: string;
   user_name: string;
@@ -300,17 +300,10 @@ export default function WorkDetailPage() {
                 </div>
               </div>
 
-              {work.source_url && (
+              {work.source_name && (
                 <div>
-                  <p className="text-sm text-muted-foreground">源文件</p>
-                  <a
-                    href={work.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary underline"
-                  >
-                    查看源文件
-                  </a>
+                  <p className="text-sm text-muted-foreground">原作品名称</p>
+                  <p className="text-sm font-medium">{work.source_name}</p>
                 </div>
               )}
 
