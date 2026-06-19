@@ -266,7 +266,7 @@ export default function VotePage() {
             <AlertDialogTitle>{isSuccess ? "投票成功" : "投票失败"}</AlertDialogTitle>
             <AlertDialogDescription>{dialogMessage}</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="[&]:sm:grid-cols-1 [&]:justify-items-center">
+          <AlertDialogFooter className="group-data-[size=sm]/alert-dialog-content:grid-cols-1 justify-items-center">
             <AlertDialogAction onClick={() => setDialogOpen(false)}>
               确定
             </AlertDialogAction>
