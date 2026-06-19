@@ -23,17 +23,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -95,7 +84,6 @@ export default function SubmitPage() {
   const [message, setMessage] = useState("");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [uploadMode, setUploadMode] = useState<"file" | "link">("file");
@@ -412,7 +400,6 @@ export default function SubmitPage() {
       if (res.ok) {
         setDialogOpen(false);
         setSubmitting(false);
-        setSubmitSuccess(true);
         setMessage(editing ? "修改成功！" : "提交成功！");
 
         // Clean up orphaned files after successful edit
@@ -524,7 +511,6 @@ export default function SubmitPage() {
                   className="ml-auto"
                   onClick={() => {
                     setEditing(true);
-                    setSubmitSuccess(false);
                     setWorkType(submitted.work_type || "");
                     setOwner(submitted.owner || "");
                     setTitle(submitted.title || "");
@@ -1065,19 +1051,15 @@ export default function SubmitPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <AlertDialog open={dialogOpen} onOpenChange={(open) => { if (!open || !submitSuccess) setDialogOpen(open); }}>
-              <AlertDialogTrigger
-                render={
-                  <Button disabled={submitting || imageUrls.length === 0 || !hcaptchaToken} />
-                }
-              >
-                <Upload className="mr-1 size-4" />
-                {editing ? (submitting ? "保存中..." : "保存修改") : (submitting ? "提交中..." : "提交作品")}
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{editing ? "保存确认" : "提交确认"}</AlertDialogTitle>
-                  <AlertDialogDescription>
+            <Button onClick={() => setDialogOpen(true)} disabled={submitting || imageUrls.length === 0 || !hcaptchaToken}>
+              <Upload className="mr-1 size-4" />
+              {editing ? (submitting ? "保存中..." : "保存修改") : (submitting ? "提交中..." : "提交作品")}
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editing ? "保存确认" : "提交确认"}</DialogTitle>
+                  <DialogDescription>
                     {submitting ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="size-4 animate-spin" />
@@ -1086,20 +1068,20 @@ export default function SubmitPage() {
                     ) : (
                       editing ? "确认保存修改后的内容？" : "我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。"
                     )}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={submitting}>取消</AlertDialogCancel>
-                  <AlertDialogAction
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>取消</Button>
+                  <Button
                     onClick={handleSubmit}
                     disabled={submitting}
                   >
                     {submitting && <Loader2 className="mr-1 size-4 animate-spin" />}
                     {editing ? (submitting ? "保存中..." : "确认保存") : (submitting ? "提交中..." : "确认提交")}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
             {message && (
               <span className="text-sm text-muted-foreground">{message}</span>
             )}
