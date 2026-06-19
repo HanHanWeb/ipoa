@@ -132,6 +132,43 @@ export default function SubmitPage() {
       .finally(() => setPageLoading(false));
   }, []);
 
+  // Restore form data from localStorage
+  useEffect(() => {
+    if (pageLoading || hasSubmitted || editing) return;
+    try {
+      const saved = localStorage.getItem("ipoa_submit_draft");
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.workType) setWorkType(data.workType);
+        if (data.owner) setOwner(data.owner);
+        if (data.title) setTitle(data.title);
+        if (data.description) setDescription(data.description);
+        if (data.version) setVersion(data.version);
+        if (data.completionDate) setCompletionDate(data.completionDate);
+        if (data.contact) setContact(data.contact);
+        if (data.os) setOs(data.os);
+        if (data.tool) setTool(data.tool);
+        if (data.sourceName) setSourceName(data.sourceName);
+        if (data.workNote) setWorkNote(data.workNote);
+        if (data.downloadUrl) setDownloadUrl(data.downloadUrl);
+        if (data.downloadCode) setDownloadCode(data.downloadCode);
+        if (data.uploadMode) setUploadMode(data.uploadMode);
+        if (data.imageUrls) setImageUrls(data.imageUrls);
+      }
+    } catch {}
+  }, [pageLoading, hasSubmitted, editing]);
+
+  // Save form data to localStorage
+  useEffect(() => {
+    if (pageLoading || hasSubmitted || editing) return;
+    const data = {
+      workType, owner, title, description, version, completionDate,
+      contact, os, tool, sourceName, workNote, downloadUrl, downloadCode,
+      uploadMode, imageUrls,
+    };
+    localStorage.setItem("ipoa_submit_draft", JSON.stringify(data));
+  }, [pageLoading, hasSubmitted, editing, workType, owner, title, description, version, completionDate, contact, os, tool, sourceName, workNote, downloadUrl, downloadCode, uploadMode, imageUrls]);
+
   // Load hCaptcha script - only when form is visible
   useEffect(() => {
     if (pageLoading || (hasSubmitted && !editing)) return;
@@ -404,6 +441,7 @@ export default function SubmitPage() {
         setDialogOpen(false);
         setSubmitting(false);
         setMessage(editing ? "修改成功！" : "提交成功！");
+        localStorage.removeItem("ipoa_submit_draft");
 
         // Clean up orphaned files after successful edit
         if (editing) {
