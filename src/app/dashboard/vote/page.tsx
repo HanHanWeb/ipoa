@@ -179,7 +179,7 @@ export default function VotePage() {
   return (
     <div className="space-y-4">
       <PageTitle title="人气之星投票" />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h1 className="text-xl font-semibold">人气之星投票</h1>
         {voteEnd && (
           <div className="flex items-center gap-2">
