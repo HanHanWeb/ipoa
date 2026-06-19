@@ -280,7 +280,7 @@ export default function DashboardPage() {
             ) : countdown.status === "ongoing" && !stagesLoaded ? (
               <div className="flex items-center gap-1.5">
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="flex items-center flex-1">
+                  <div key={i} className={`flex items-center ${i < 2 ? "flex-1" : ""}`}>
                     <div className="flex flex-col items-center gap-1.5 shrink-0">
                       <div className="size-8 rounded-full bg-muted animate-pulse" />
                       <div className="h-3 w-10 rounded bg-muted animate-pulse" />
