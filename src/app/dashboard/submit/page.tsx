@@ -769,7 +769,7 @@ export default function SubmitPage() {
             <div className="flex flex-col gap-1.5">
               <Label className="text-sm">原作品名称 <span className="text-red-500">*</span></Label>
               <Input
-                placeholder="填写作品原型名称"
+                placeholder="请填写作品原型名称"
                 value={sourceName}
                 onChange={(e) => setSourceName(e.target.value)}
               />
