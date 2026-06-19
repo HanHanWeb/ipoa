@@ -106,6 +106,8 @@ export default function SettingsPage() {
   const [stageUpload, setStageUpload] = useState<StageDate>(defaultStage);
   const [stageReview, setStageReview] = useState<StageDate>(defaultStage);
   const [stageResult, setStageResult] = useState<StageDate>(defaultStage);
+  const [voteStart, setVoteStart] = useState<StageDate>(defaultStage);
+  const [voteEnd, setVoteEnd] = useState<StageDate>(defaultStage);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -126,6 +128,8 @@ export default function SettingsPage() {
         setStageUpload(parseDate(data.stage_upload_start));
         setStageReview(parseDate(data.stage_review_start));
         setStageResult(parseDate(data.stage_result_start));
+        setVoteStart(parseDate(data.vote_start));
+        setVoteEnd(parseDate(data.vote_end));
       });
   }, []);
 
@@ -156,6 +160,8 @@ export default function SettingsPage() {
         stage_upload_start: buildISOString(stageUpload.date, stageUpload.hour, stageUpload.minute),
         stage_review_start: buildISOString(stageReview.date, stageReview.hour, stageReview.minute),
         stage_result_start: buildISOString(stageResult.date, stageResult.hour, stageResult.minute),
+        vote_start: buildISOString(voteStart.date, voteStart.hour, voteStart.minute),
+        vote_end: buildISOString(voteEnd.date, voteEnd.hour, voteEnd.minute),
       }),
     });
     if (res.ok) {
@@ -184,6 +190,8 @@ export default function SettingsPage() {
             <StageDatePicker label="作品提交 开始" stage={stageUpload} onChange={setStageUpload} />
             <StageDatePicker label="作品评审 开始" stage={stageReview} onChange={setStageReview} />
             <StageDatePicker label="结果公布 开始" stage={stageResult} onChange={setStageResult} />
+            <StageDatePicker label="人气之星投票 开始" stage={voteStart} onChange={setVoteStart} />
+            <StageDatePicker label="人气之星投票 结束" stage={voteEnd} onChange={setVoteEnd} />
           </div>
           <div className="flex items-center gap-3">
             <Button onClick={handleSave} disabled={saving}>

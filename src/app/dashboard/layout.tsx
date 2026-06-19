@@ -26,11 +26,12 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2, MoreHorizontal, Trophy } from "lucide-react";
+import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardList, Loader2, MoreHorizontal, Trophy, Star } from "lucide-react";
 
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
   { title: "作品提交", url: "/dashboard/submit", icon: Upload },
+  { title: "人气之星", url: "/dashboard/vote", icon: Star },
   { title: "社区联系", url: "/dashboard/community", icon: Users },
 ];
 
