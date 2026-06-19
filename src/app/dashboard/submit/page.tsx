@@ -448,9 +448,22 @@ export default function SubmitPage() {
         return;
       } else {
         const err = await res.json();
-        setMessage(err.error || (editing ? "修改失败" : "提交失败"));
+        const errMsg = err.error || (editing ? "修改失败" : "提交失败");
+        setDialogOpen(false);
+        setSubmitting(false);
+        setMessage(errMsg);
+        // If captcha verification failed, reset the captcha widget
+        if (errMsg.includes("人机验证") || errMsg.includes("captcha")) {
+          setHcaptchaToken("");
+          const w = window as unknown as { hcaptcha?: { reset: () => void } };
+          if (w.hcaptcha) {
+            w.hcaptcha.reset();
+          }
+        }
+        return;
       }
     } catch {
+      setDialogOpen(false);
       setMessage("网络错误，请检查网络连接后重试");
     }
 
