@@ -910,7 +910,7 @@ export default function SubmitPage() {
                   placeholder="提取码（可选）"
                   value={downloadCode}
                   onChange={(e) => setDownloadCode(e.target.value)}
-                  className="w-32"
+                  className="md:w-48"
                 />
               </div>
             )}
