@@ -8,8 +8,8 @@ import { ChevronDown } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "赛事首页" },
-  { href: "/awards", label: "获奖名单" },
   { href: "/dashboard/vote", label: "人气之星" },
+  { href: "/awards", label: "获奖名单" },
 ];
 
 export function NavBar() {

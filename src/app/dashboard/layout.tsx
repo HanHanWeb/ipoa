@@ -31,7 +31,6 @@ import { Home, Upload, Users, Settings, UserCog, Megaphone, LogOut, ClipboardLis
 const navItems = [
   { title: "活动首页", url: "/dashboard", icon: Home },
   { title: "作品提交", url: "/dashboard/submit", icon: Upload },
-  { title: "人气之星", url: "/dashboard/vote", icon: Star },
   { title: "社区联系", url: "/dashboard/community", icon: Users },
 ];
 
@@ -56,6 +55,7 @@ export default function DashboardLayout({
   const [isAdmin, setIsAdmin] = useState(false);
   const [isReviewer, setIsReviewer] = useState(false);
   const [awardsEnabled, setAwardsEnabled] = useState(false);
+  const [voteStarted, setVoteStarted] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null);
 
   useEffect(() => {
@@ -72,6 +72,14 @@ export default function DashboardLayout({
       .then((res) => res.json())
       .then((data) => {
         setAwardsEnabled(data.enabled || false);
+      })
+      .catch(() => {});
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.vote_start) {
+          setVoteStarted(new Date(data.vote_start).getTime() <= Date.now());
+        }
       })
       .catch(() => {});
   }, []);
@@ -109,6 +117,17 @@ export default function DashboardLayout({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+                {voteStarted && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      render={<Link href="/dashboard/vote" />}
+                      isActive={pathname === "/dashboard/vote"}
+                    >
+                      <Star />
+                      <span>人气之星</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 {awardsEnabled && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
