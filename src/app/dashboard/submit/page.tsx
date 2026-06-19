@@ -23,12 +23,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Upload, ImagePlus, X, Calendar as CalendarIcon, Clock, FileUp, File, Link2, Loader2 } from "lucide-react";
 import {
   Select,
@@ -1118,11 +1120,11 @@ export default function SubmitPage() {
               <Upload className="mr-1 size-4" />
               {editing ? (submitting ? "保存中..." : "保存修改") : (submitting ? "提交中..." : "提交作品")}
             </Button>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editing ? "保存确认" : "提交确认"}</DialogTitle>
-                  <DialogDescription>
+            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{editing ? "保存确认" : "提交确认"}</AlertDialogTitle>
+                  <AlertDialogDescription>
                     {submitting ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="size-4 animate-spin" />
@@ -1131,20 +1133,20 @@ export default function SubmitPage() {
                     ) : (
                       editing ? "确认保存修改后的内容？" : "我承诺该作品系本人 / 组织自主创作，如有抄袭或侵权，愿意承担法律责任。提交后不可修改。"
                     )}
-                  </DialogDescription>
-                </DialogHeader>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>取消</Button>
-                  <Button
+                  <AlertDialogCancel disabled={submitting}>取消</AlertDialogCancel>
+                  <AlertDialogAction
                     onClick={handleSubmit}
                     disabled={submitting}
                   >
                     {submitting && <Loader2 className="mr-1 size-4 animate-spin" />}
                     {editing ? (submitting ? "保存中..." : "确认保存") : (submitting ? "提交中..." : "确认提交")}
-                  </Button>
+                  </AlertDialogAction>
                 </div>
-              </DialogContent>
-            </Dialog>
+              </AlertDialogContent>
+            </AlertDialog>
             {message && (
               <span className="text-sm text-muted-foreground">{message}</span>
             )}
