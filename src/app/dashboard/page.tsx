@@ -133,6 +133,7 @@ export default function DashboardPage() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [noticesLoaded, setNoticesLoaded] = useState(false);
   const [stages, setStages] = useState<{ label: string; start: Date }[]>([]);
+  const [stagesLoaded, setStagesLoaded] = useState(false);
   const countdown = useCountdown();
 
   useEffect(() => {
@@ -166,6 +167,7 @@ export default function DashboardPage() {
           })
           .filter(Boolean) as { label: string; start: Date }[];
         setStages(parsed);
+        setStagesLoaded(true);
       });
   }, []);
 
@@ -272,6 +274,19 @@ export default function DashboardPage() {
                     <div className="mt-1 text-xs text-muted-foreground">
                       {item.label}
                     </div>
+                  </div>
+                ))}
+              </div>
+            ) : countdown.status === "ongoing" && !stagesLoaded ? (
+              <div className="flex items-center gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-center flex-1">
+                    <div className="flex flex-col items-center gap-1.5 shrink-0">
+                      <div className="size-8 rounded-full bg-muted animate-pulse" />
+                      <div className="h-3 w-10 rounded bg-muted animate-pulse" />
+                      <div className="h-3 w-8 rounded bg-muted animate-pulse" />
+                    </div>
+                    {i < 2 && <div className="mx-2 h-1 flex-1 rounded-full bg-muted animate-pulse" />}
                   </div>
                 ))}
               </div>
