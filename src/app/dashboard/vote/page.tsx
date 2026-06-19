@@ -4,13 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/page-title";
-import { ThumbsUp, Timer } from "lucide-react";
+import { ThumbsUp, Timer, CheckCircle2, XCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
@@ -258,9 +260,11 @@ export default function VotePage() {
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
-            <AlertDialogTitle className={isSuccess ? "text-green-600" : "text-red-600"}>
-              {dialogMessage}
-            </AlertDialogTitle>
+            <AlertDialogMedia className={isSuccess ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}>
+              {isSuccess ? <CheckCircle2 /> : <XCircle />}
+            </AlertDialogMedia>
+            <AlertDialogTitle>{isSuccess ? "投票成功" : "投票失败"}</AlertDialogTitle>
+            <AlertDialogDescription>{dialogMessage}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setDialogOpen(false)}>
