@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/page-title";
 import { ThumbsUp, CheckCircle2, XCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface VoteWork {
   id: number;
@@ -14,12 +24,6 @@ interface VoteWork {
   os: string;
   tool: string;
   vote_count: number;
-}
-
-interface Toast {
-  id: number;
-  message: string;
-  type: "success" | "error";
 }
 
 function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
@@ -68,49 +72,20 @@ function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
   );
 }
 
-function ToastItem({ toast, onDone }: { toast: Toast; onDone: () => void }) {
-  const [visible, setVisible] = useState(false);
-  const [exiting, setExiting] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
-    const hideTimer = setTimeout(() => setExiting(true), 2500);
-    const removeTimer = setTimeout(() => onDone(), 3000);
-    return () => {
-      clearTimeout(hideTimer);
-      clearTimeout(removeTimer);
-    };
-  }, [onDone]);
-
-  const isSuccess = toast.type === "success";
-
-  return (
-    <div
-      className={`flex items-center gap-2.5 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium transition-all duration-300 ${
-        exiting ? "opacity-0 translate-y-2" : visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      } ${isSuccess ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"}`}
-    >
-      {isSuccess ? <CheckCircle2 className="size-5 shrink-0" /> : <XCircle className="size-5 shrink-0" />}
-      {toast.message}
-    </div>
-  );
-}
-
 export default function VotePage() {
   const [works, setWorks] = useState<VoteWork[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<number | null>(null);
   const [votedSubmissionId, setVotedSubmissionId] = useState<number | null>(null);
   const [votingOpen, setVotingOpen] = useState(true);
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<"success" | "error">("success");
+  const [dialogMessage, setDialogMessage] = useState("");
 
-  const addToast = useCallback((message: string, type: "success" | "error") => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, message, type }]);
-  }, []);
-
-  const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+  const showDialog = useCallback((message: string, type: "success" | "error") => {
+    setDialogMessage(message);
+    setDialogType(type);
+    setDialogOpen(true);
   }, []);
 
   const fetchVotes = useCallback(async () => {
@@ -121,11 +96,11 @@ export default function VotePage() {
       setVotedSubmissionId(data.votedSubmissionId);
       setVotingOpen(data.votingOpen);
     } catch {
-      addToast("加载投票数据失败", "error");
+      showDialog("加载投票数据失败", "error");
     } finally {
       setLoading(false);
     }
-  }, [addToast]);
+  }, [showDialog]);
 
   useEffect(() => {
     fetchVotes();
@@ -141,13 +116,13 @@ export default function VotePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        addToast("投票成功！感谢您的支持", "success");
+        showDialog("投票成功！感谢您的支持", "success");
         fetchVotes();
       } else {
-        addToast(data.error || "投票失败", "error");
+        showDialog(data.error || "投票失败", "error");
       }
     } catch {
-      addToast("网络错误，请重试", "error");
+      showDialog("网络错误，请重试", "error");
     } finally {
       setVoting(null);
     }
@@ -173,8 +148,10 @@ export default function VotePage() {
     );
   }
 
+  const isSuccess = dialogType === "success";
+
   return (
-    <div className="space-y-4 relative">
+    <div className="space-y-4">
       <PageTitle title="人气之星投票" />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">人气之星投票</h1>
@@ -228,12 +205,23 @@ export default function VotePage() {
         <p className="text-center text-muted-foreground py-8">暂无参赛作品</p>
       )}
 
-      {/* Toast 通知 */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
-        {toasts.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onDone={() => removeToast(toast.id)} />
-        ))}
-      </div>
+      {/* 投票结果弹窗 */}
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className={isSuccess ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}>
+              {isSuccess ? <CheckCircle2 /> : <XCircle />}
+            </AlertDialogMedia>
+            <AlertDialogTitle>{isSuccess ? "投票成功" : "投票失败"}</AlertDialogTitle>
+            <AlertDialogDescription>{dialogMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setDialogOpen(false)}>
+              知道了
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
