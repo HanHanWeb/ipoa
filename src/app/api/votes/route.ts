@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
 
     // 获取每个作品的投票数
     const results = await getDb().execute(`
-      SELECT s.id, s.title, s.owner, s.image_url, s.work_type, s.description,
+      SELECT s.id, s.title, s.owner, s.image_url, s.work_type, s.description, s.os, s.tool,
              COUNT(v.id) as vote_count
       FROM submissions s
       LEFT JOIN votes v ON v.submission_id = s.id
@@ -137,15 +137,26 @@ export async function GET(req: NextRequest) {
     const voting = await isVotingOpen();
 
     return NextResponse.json({
-      works: results.rows.map((r) => ({
-        id: r.id,
-        title: r.title,
-        owner: r.owner,
-        image_url: r.image_url,
-        work_type: r.work_type,
-        description: r.description,
-        vote_count: r.vote_count,
-      })),
+      works: results.rows.map((r) => {
+        let images: string[] = [];
+        try {
+          const parsed = JSON.parse(r.image_url as string);
+          images = Array.isArray(parsed) ? parsed : [r.image_url as string];
+        } catch {
+          images = [r.image_url as string];
+        }
+        return {
+          id: r.id,
+          title: r.title,
+          owner: r.owner,
+          images,
+          work_type: r.work_type,
+          description: r.description,
+          os: r.os,
+          tool: r.tool,
+          vote_count: r.vote_count,
+        };
+      }),
       votedSubmissionId,
       votingOpen: voting.open,
     });

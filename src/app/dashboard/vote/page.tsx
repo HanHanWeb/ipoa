@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/page-title";
@@ -9,10 +9,49 @@ interface VoteWork {
   id: number;
   title: string;
   owner: string;
-  image_url: string;
+  images: string[];
   work_type: string;
   description: string;
+  os: string;
+  tool: string;
   vote_count: number;
+}
+
+function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
+  const [current, setCurrent] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setCurrent((prev) => (prev + 1) % images.length);
+        setFade(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  return (
+    <div className="aspect-square bg-muted overflow-hidden relative">
+      <img
+        src={images[current]}
+        alt={alt}
+        className={`w-full h-full object-cover transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}
+      />
+      {images.length > 1 && (
+        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+          {images.map((_, i) => (
+            <span
+              key={i}
+              className={`block w-1.5 h-1.5 rounded-full transition-colors ${i === current ? "bg-white" : "bg-white/50"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function VotePage() {
@@ -23,7 +62,7 @@ export default function VotePage() {
   const [votingOpen, setVotingOpen] = useState(true);
   const [message, setMessage] = useState("");
 
-  const fetchVotes = async () => {
+  const fetchVotes = useCallback(async () => {
     try {
       const res = await fetch("/api/votes");
       const data = await res.json();
@@ -35,11 +74,11 @@ export default function VotePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchVotes();
-  }, []);
+  }, [fetchVotes]);
 
   const handleVote = async (submissionId: number) => {
     setVoting(submissionId);
@@ -73,9 +112,10 @@ export default function VotePage() {
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="rounded-lg border overflow-hidden">
               <div className="aspect-square bg-muted animate-pulse" />
-              <div className="p-2 space-y-1">
+              <div className="p-3 space-y-2">
                 <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
                 <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
+                <div className="h-3 w-full bg-muted animate-pulse rounded" />
               </div>
             </div>
           ))}
@@ -102,24 +142,24 @@ export default function VotePage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {works.map((work) => (
           <div key={work.id} className="rounded-lg border overflow-hidden hover:shadow-md transition-shadow">
-            <div className="aspect-square bg-muted overflow-hidden">
-              <img
-                src={work.image_url}
-                alt={work.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-2 space-y-1.5">
-              <div className="flex items-start justify-between gap-1">
-                <p className="font-medium text-sm truncate">{work.title}</p>
-                <Badge variant="secondary" className="shrink-0 text-xs">
-                  {work.work_type}
-                </Badge>
-              </div>
+            <ImageCarousel images={work.images} alt={work.title} />
+            <div className="p-3 space-y-2">
+              <p className="font-medium text-sm truncate">{work.title}</p>
               <p className="text-xs text-muted-foreground truncate">{work.owner}</p>
               {work.description && (
                 <p className="text-xs text-muted-foreground line-clamp-2">{work.description}</p>
               )}
+              <div className="flex flex-wrap gap-1">
+                {work.work_type && (
+                  <Badge variant="secondary" className="text-xs">{work.work_type}</Badge>
+                )}
+                {work.os && (
+                  <Badge variant="outline" className="text-xs">{work.os}</Badge>
+                )}
+                {work.tool && (
+                  <Badge variant="outline" className="text-xs">{work.tool}</Badge>
+                )}
+              </div>
               <div className="flex items-center justify-between pt-1">
                 <span className="text-sm font-semibold text-primary">
                   {work.vote_count} 票
