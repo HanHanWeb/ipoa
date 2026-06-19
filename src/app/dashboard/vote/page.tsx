@@ -34,14 +34,14 @@ function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
 
   if (images.length === 0) {
     return (
-      <div className="aspect-square bg-muted flex items-center justify-center text-muted-foreground text-sm">
+      <div className="aspect-video bg-muted flex items-center justify-center text-muted-foreground text-sm">
         暂无图片
       </div>
     );
   }
 
   return (
-    <div className="aspect-square bg-muted overflow-hidden relative">
+    <div className="aspect-video bg-muted overflow-hidden relative">
       <img
         src={images[current]}
         alt={alt}
@@ -119,7 +119,7 @@ export default function VotePage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="rounded-lg border overflow-hidden">
-              <div className="aspect-square bg-muted animate-pulse" />
+              <div className="aspect-video bg-muted animate-pulse" />
               <div className="p-3 space-y-2">
                 <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
                 <div className="h-3 w-full bg-muted animate-pulse rounded" />
