@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/page-title";
-import { ThumbsUp, CheckCircle2, XCircle } from "lucide-react";
+import { ThumbsUp, CheckCircle2, XCircle, Timer } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,7 +79,7 @@ export default function VotePage() {
   const [votedSubmissionId, setVotedSubmissionId] = useState<number | null>(null);
   const [votingOpen, setVotingOpen] = useState(true);
   const [voteEnd, setVoteEnd] = useState("");
-  const [countdown, setCountdown] = useState("");
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: false });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"success" | "error">("success");
   const [dialogMessage, setDialogMessage] = useState("");
@@ -115,21 +115,17 @@ export default function VotePage() {
       const end = new Date(voteEnd).getTime();
       const now = Date.now();
       if (now >= end) {
-        setCountdown("投票已结束");
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: true });
         return;
       }
       const diff = end - now;
-      const days = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const minutes = Math.floor((diff % 3600000) / 60000);
-      const seconds = Math.floor((diff % 60000) / 1000);
-      if (days > 0) {
-        setCountdown(`剩余 ${days}天 ${hours}时 ${minutes}分 ${seconds}秒`);
-      } else if (hours > 0) {
-        setCountdown(`剩余 ${hours}时 ${minutes}分 ${seconds}秒`);
-      } else {
-        setCountdown(`剩余 ${minutes}分 ${seconds}秒`);
-      }
+      setCountdown({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+        ended: false,
+      });
     };
     updateCountdown();
     const timer = setInterval(updateCountdown, 1000);
@@ -185,8 +181,33 @@ export default function VotePage() {
       <PageTitle title="人气之星投票" />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">人气之星投票</h1>
-        {countdown && (
-          <span className="text-sm text-muted-foreground">{countdown}</span>
+        {voteEnd && (
+          <div className="flex items-center gap-2">
+            <Timer className="size-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              {countdown.ended ? "投票已结束" : "距投票结束"}
+            </span>
+            {!countdown.ended && (
+              <div className="flex items-center gap-1">
+                {countdown.days > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[2rem] h-7 px-1.5 rounded bg-primary/10 text-primary text-sm font-semibold tabular-nums">
+                    {countdown.days}<span className="text-xs font-normal ml-0.5">天</span>
+                  </span>
+                )}
+                <span className="inline-flex items-center justify-center min-w-[2rem] h-7 px-1.5 rounded bg-primary/10 text-primary text-sm font-semibold tabular-nums">
+                  {String(countdown.hours).padStart(2, "0")}
+                </span>
+                <span className="text-primary font-bold text-xs">:</span>
+                <span className="inline-flex items-center justify-center min-w-[2rem] h-7 px-1.5 rounded bg-primary/10 text-primary text-sm font-semibold tabular-nums">
+                  {String(countdown.minutes).padStart(2, "0")}
+                </span>
+                <span className="text-primary font-bold text-xs">:</span>
+                <span className="inline-flex items-center justify-center min-w-[2rem] h-7 px-1.5 rounded bg-primary/10 text-primary text-sm font-semibold tabular-nums">
+                  {String(countdown.seconds).padStart(2, "0")}
+                </span>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
