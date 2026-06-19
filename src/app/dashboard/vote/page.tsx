@@ -267,7 +267,7 @@ export default function VotePage() {
             <AlertDialogDescription>{dialogMessage}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="group-data-[size=sm]/alert-dialog-content:grid-cols-1 justify-items-center">
-            <AlertDialogAction onClick={() => setDialogOpen(false)}>
+            <AlertDialogAction onClick={() => setDialogOpen(false)} className="min-w-24">
               确定
             </AlertDialogAction>
           </AlertDialogFooter>
