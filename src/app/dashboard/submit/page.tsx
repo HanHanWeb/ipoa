@@ -410,6 +410,7 @@ export default function SubmitPage() {
 
       if (res.ok) {
         setDialogOpen(false);
+        setSubmitting(false);
         setMessage(editing ? "修改成功！" : "提交成功！");
 
         // Clean up orphaned files after successful edit
@@ -433,6 +434,26 @@ export default function SubmitPage() {
             }).catch(() => {});
           }
         }
+
+        // Optimistically switch to submitted view to prevent AlertDialog from reappearing
+        setSubmissions([{
+          id: submitted?.id ?? 0,
+          work_type: workType,
+          owner,
+          title,
+          description,
+          image_url: JSON.stringify(imageUrls),
+          created_at: submitted?.created_at ?? new Date().toISOString(),
+          version,
+          completion_date: completionDate,
+          contact,
+          os,
+          tool,
+          source_url: sourceUrl,
+          download_url: downloadUrl,
+          work_note: workNote,
+          final_score: submitted?.final_score ?? null,
+        }]);
 
         refetchSubmissions();
         return;
