@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -52,10 +52,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isReviewer, setIsReviewer] = useState(false);
   const [awardsEnabled, setAwardsEnabled] = useState(false);
   const [voteStarted, setVoteStarted] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null);
 
   useEffect(() => {
@@ -66,7 +68,14 @@ export default function DashboardLayout({
           setUser(data.user);
           setIsAdmin(data.user.role === "admin");
           setIsReviewer(data.user.role === "reviewer");
+        } else {
+          router.replace("/auth/login");
         }
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        router.replace("/auth/login");
+        setAuthChecked(true);
       });
     fetch("/api/awards")
       .then((res) => res.json())
@@ -83,6 +92,14 @@ export default function DashboardLayout({
       })
       .catch(() => {});
   }, []);
+
+  if (!authChecked) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
