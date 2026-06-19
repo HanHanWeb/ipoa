@@ -57,6 +57,7 @@ async function ensureSubmissionsTable() {
     ["tool", "TEXT NOT NULL DEFAULT ''"],
     ["source_name", "TEXT NOT NULL DEFAULT ''"],
     ["download_url", "TEXT NOT NULL DEFAULT ''"],
+    ["download_code", "TEXT NOT NULL DEFAULT ''"],
     ["work_note", "TEXT NOT NULL DEFAULT ''"],
     ["final_score", "INTEGER DEFAULT NULL"],
   ];
@@ -84,7 +85,7 @@ export async function GET() {
     await ensureSubmissionsTable();
 
     const result = await getDb().execute({
-      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_name, download_url, work_note, final_score FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
+      sql: "SELECT id, work_type, owner, title, description, image_url, created_at, version, completion_date, contact, os, tool, source_name, download_url, download_code, work_note, final_score FROM submissions WHERE user_id = ? ORDER BY created_at DESC",
       args: [userId],
     });
 
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
     await initDb();
     await ensureSubmissionsTable();
 
-    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_name, download_url, work_note, hcaptcha_token } = await request.json();
+    const { work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_name, download_url, download_code, work_note, hcaptcha_token } = await request.json();
 
     // Verify hCaptcha
     if (!hcaptcha_token || !(await verifyHCaptcha(hcaptcha_token))) {
@@ -144,8 +145,8 @@ export async function POST(request: Request) {
     const imageUrl = JSON.stringify(image_urls);
 
     await getDb().execute({
-      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url, version, completion_date, contact, os, tool, source_name, download_url, work_note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      args: [userId, work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_name || "", download_url || "", work_note || ""],
+      sql: "INSERT INTO submissions (user_id, work_type, owner, title, description, image_url, version, completion_date, contact, os, tool, source_name, download_url, download_code, work_note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [userId, work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_name || "", download_url || "", download_code || "", work_note || ""],
     });
 
     return NextResponse.json({ ok: true });
@@ -172,7 +173,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "评审已开始，无法修改作品" }, { status: 400 });
     }
 
-    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_name, download_url, work_note, hcaptcha_token } = await request.json();
+    const { submissionId, work_type, owner, title, description, image_urls, version, completion_date, contact, os, tool, source_name, download_url, download_code, work_note, hcaptcha_token } = await request.json();
 
     // Verify hCaptcha
     if (!hcaptcha_token || !(await verifyHCaptcha(hcaptcha_token))) {
@@ -200,8 +201,8 @@ export async function PATCH(request: Request) {
 
     await getDb().execute({
       sql: `UPDATE submissions SET work_type = ?, owner = ?, title = ?, description = ?, image_url = ?,
-            version = ?, completion_date = ?, contact = ?, os = ?, tool = ?, source_name = ?, download_url = ?, work_note = ? WHERE id = ? AND user_id = ?`,
-      args: [work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_name || "", download_url || "", work_note || "", submissionId, userId],
+            version = ?, completion_date = ?, contact = ?, os = ?, tool = ?, source_name = ?, download_url = ?, download_code = ?, work_note = ? WHERE id = ? AND user_id = ?`,
+      args: [work_type, owner, title, description, imageUrl, version || "", completion_date || "", contact || "", os || "", tool || "", source_name || "", download_url || "", download_code || "", work_note || "", submissionId, userId],
     });
 
     return NextResponse.json({ ok: true });

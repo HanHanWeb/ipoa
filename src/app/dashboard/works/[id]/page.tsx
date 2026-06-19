@@ -38,6 +38,7 @@ interface WorkDetail {
   tool: string;
   source_name: string;
   download_url: string;
+  download_code: string;
   work_note: string;
   user_name: string;
   user_email: string;
@@ -322,6 +323,9 @@ export default function WorkDetailPage() {
                       ? (work.download_url.split("/").pop()?.replace(/^\d+_/, "") || "下载文件")
                       : work.download_url}
                   </a>
+                  {work.download_code && (
+                    <p className="mt-1 text-xs text-muted-foreground">提取码：{work.download_code}</p>
+                  )}
                 </div>
               )}
 

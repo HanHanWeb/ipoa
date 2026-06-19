@@ -50,6 +50,8 @@ interface WorkItem {
   os: string;
   tool: string;
   source_name: string;
+  download_url: string;
+  download_code: string;
   user_name: string;
   user_email: string;
   user_avatar: string;

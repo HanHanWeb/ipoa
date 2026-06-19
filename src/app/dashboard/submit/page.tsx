@@ -54,6 +54,7 @@ interface Submission {
   tool: string;
   source_name: string;
   download_url: string;
+  download_code: string;
   work_note: string;
   final_score: number | null;
 }
@@ -86,6 +87,7 @@ export default function SubmitPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [downloadCode, setDownloadCode] = useState("");
   const [uploadMode, setUploadMode] = useState<"file" | "link">("file");
   const [uploadedFile, setUploadedFile] = useState<{ key: string; name: string; size: number; url: string } | null>(null);
   const [workUploading, setWorkUploading] = useState(false);
@@ -383,6 +385,7 @@ export default function SubmitPage() {
         tool,
         source_name: sourceName,
         download_url: downloadUrl,
+        download_code: downloadCode,
         work_note: workNote,
         hcaptcha_token: hcaptchaToken,
       };
@@ -440,6 +443,7 @@ export default function SubmitPage() {
           tool,
           source_name: sourceName,
           download_url: downloadUrl,
+          download_code: downloadCode,
           work_note: workNote,
           final_score: submitted?.final_score ?? null,
         }]);
@@ -539,6 +543,7 @@ export default function SubmitPage() {
                     setSourceName(submitted.source_name || "");
                     setWorkNote(submitted.work_note || "");
                     setDownloadUrl(submitted.download_url || "");
+                    setDownloadCode(submitted.download_code || "");
                     if (submitted.download_url?.includes("rains3.com/")) {
                       setUploadMode("file");
                       const parts = submitted.download_url.split("/");
@@ -635,6 +640,9 @@ export default function SubmitPage() {
                     </a>
                   )}
                 </p>
+                {submitted.download_code && (
+                  <p className="mt-1 text-sm text-muted-foreground">提取码：{submitted.download_code}</p>
+                )}
               </div>
             )}
 
@@ -892,11 +900,19 @@ export default function SubmitPage() {
                 <p className="text-xs text-muted-foreground">仅支持 .zip 格式，最大 200MB</p>
               </div>
             ) : (
-              <Input
-                placeholder="请输入作品下载链接"
-                value={downloadUrl}
-                onChange={(e) => setDownloadUrl(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <Input
+                  placeholder="请输入作品下载链接"
+                  value={downloadUrl}
+                  onChange={(e) => setDownloadUrl(e.target.value)}
+                />
+                <Input
+                  placeholder="提取码（可选）"
+                  value={downloadCode}
+                  onChange={(e) => setDownloadCode(e.target.value)}
+                  className="w-32"
+                />
+              </div>
             )}
           </div>
 
