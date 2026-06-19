@@ -69,12 +69,12 @@ export default function DashboardLayout({
           setIsAdmin(data.user.role === "admin");
           setIsReviewer(data.user.role === "reviewer");
         } else {
-          router.replace("/auth/login");
+          router.replace("/api/auth/login");
         }
         setAuthChecked(true);
       })
       .catch(() => {
-        router.replace("/auth/login");
+        router.replace("/api/auth/login");
         setAuthChecked(true);
       });
     fetch("/api/awards")
