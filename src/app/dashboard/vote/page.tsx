@@ -28,16 +28,11 @@ interface VoteWork {
 
 function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
   const [current, setCurrent] = useState(0);
-  const [fade, setFade] = useState(true);
 
   useEffect(() => {
     if (images.length <= 1) return;
     const timer = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % images.length);
-        setFade(true);
-      }, 400);
+      setCurrent((prev) => (prev + 1) % images.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [images.length]);
@@ -52,12 +47,20 @@ function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
 
   return (
     <div className="aspect-video bg-muted overflow-hidden relative">
-      <img
-        src={images[current]}
-        alt={alt}
-        crossOrigin="anonymous"
-        className={`w-full h-full object-cover transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}
-      />
+      <div
+        className="flex h-full transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${current * 100}%)` }}
+      >
+        {images.map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt={alt}
+            crossOrigin="anonymous"
+            className="w-full h-full object-cover flex-shrink-0"
+          />
+        ))}
+      </div>
       {images.length > 1 && (
         <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
           {images.map((_, i) => (
