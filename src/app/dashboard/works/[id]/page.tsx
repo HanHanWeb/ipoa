@@ -474,24 +474,6 @@ export default function WorkDetailPage() {
                       </div>
                     )}
 
-                    {/* 分数统计 */}
-                    {scores.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="rounded-md border p-3 text-center">
-                          <p className="text-2xl font-bold text-[#05bc5e]">{Math.max(...scores.map(s => s.score))}</p>
-                          <p className="text-xs text-muted-foreground mt-1">最高分</p>
-                        </div>
-                        <div className="rounded-md border p-3 text-center">
-                          <p className="text-2xl font-bold text-red-500">{Math.min(...scores.map(s => s.score))}</p>
-                          <p className="text-xs text-muted-foreground mt-1">最低分</p>
-                        </div>
-                        <div className="rounded-md border p-3 text-center">
-                          <p className="text-2xl font-bold text-primary">{Math.round(scores.reduce((a, b) => a + b.score, 0) / scores.length)}</p>
-                          <p className="text-xs text-muted-foreground mt-1">平均分</p>
-                        </div>
-                      </div>
-                    )}
-
                     {/* 所有打分列表 */}
                     <div className="space-y-2">
                       <p className="text-sm font-medium">所有打分</p>
