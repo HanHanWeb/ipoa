@@ -24,7 +24,7 @@ export function NavBar() {
         <div className="flex items-center gap-2 md:gap-3">
           <a href="/" className="flex items-center">
             <img
-              src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
+              src="https://intereco.cn-nb1.rains3.com/basic/ipoa.png"
               alt="IPOA Logo"
               className="h-6 w-auto md:h-8"
               crossOrigin="anonymous"

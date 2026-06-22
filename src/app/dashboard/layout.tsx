@@ -109,7 +109,7 @@ export default function DashboardLayout({
             <SidebarMenuItem className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
               <SidebarMenuButton size="lg" render={<Link href="/" />} className="group-data-[collapsible=icon]:hidden">
                 <img
-                  src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
+                  src="https://intereco.cn-nb1.rains3.com/basic/ipoa.png"
                   alt="IPOA Logo"
                   className="h-8 w-auto"
                   crossOrigin="anonymous"
@@ -253,7 +253,7 @@ export default function DashboardLayout({
         <header className="flex items-center gap-2 border-b px-4 py-2 md:hidden">
           <SidebarTrigger />
           <img
-            src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
+            src="https://intereco.cn-nb1.rains3.com/basic/ipoa.png"
             alt="IPOA Logo"
             className="h-6 w-auto"
             crossOrigin="anonymous"

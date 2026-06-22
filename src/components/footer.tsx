@@ -28,7 +28,7 @@ export function Footer() {
           {/* Left: Logo & description */}
           <div className="max-w-xs">
             <img
-              src="https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/ipoa.png"
+              src="https://intereco.cn-nb1.rains3.com/basic/ipoa.png"
               alt="Logo"
               className="h-10 w-auto"
               crossOrigin="anonymous"

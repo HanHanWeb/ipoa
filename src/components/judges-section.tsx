@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 
-const IMG_BASE = "https://intereco-basic-1305364972.cos.ap-nanjing.myqcloud.com/images/basic/pw";
+const IMG_BASE = "https://intereco.cn-nb1.rains3.com/basic/pw";
 
 interface Judge {
   name: string;
