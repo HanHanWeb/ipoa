@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     }
 
     const rand = Math.random().toString(36).slice(2, 8);
-    const key = `ipoa/images/${Date.now()}_${rand}.${ext}`;
+    const key = `ipoa/202608/images/${Date.now()}_${rand}.${ext}`;
     const contentType = ext === "png" ? "image/png" : "image/jpeg";
 
     const uploadUrl = await getSignedUploadUrl(key, contentType);

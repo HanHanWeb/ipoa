@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     // Sanitize filename
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `${Date.now()}_${sanitized}`;
+    const key = `ipoa/202608/works/${Date.now()}_${sanitized}`;
 
     const uploadUrl = await getSignedUploadUrl(key, contentType);
     const fileUrl = getS3PublicUrl(key);
