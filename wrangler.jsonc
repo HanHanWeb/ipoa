@@ -12,7 +12,11 @@
 		"CASDOOR_CLIENT_ID": "5216e83eda6508ba5f51",
 		"CASDOOR_ORGANIZATION": "界面生态",
 		"CASDOOR_APPLICATION": "界面生态 IPOA 赛事",
-		"TURSO_DATABASE_URL": "libsql://ipoa-hanhanweb.aws-ap-northeast-1.turso.io"
+		"TURSO_DATABASE_URL": "libsql://ipoa-hanhanweb.aws-ap-northeast-1.turso.io",
+		"S3_ENDPOINT": "https://cn-nb1.rains3.com",
+		"S3_BUCKET": "intereco",
+		"S3_REGION": "auto",
+		"S3_PUBLIC_URL": "https://intereco.cn-nb1.rains3.com"
 	},
 	"assets": {
 		"directory": ".open-next/assets",

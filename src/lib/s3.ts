@@ -23,6 +23,7 @@ export function getS3Client(): S3Client {
         secretAccessKey: S3_SECRET_KEY,
       },
       forcePathStyle: true,
+      requestChecksumCalculation: "WHEN_REQUIRED",
     });
   }
   return _client;
