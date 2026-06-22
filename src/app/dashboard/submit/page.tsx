@@ -272,9 +272,9 @@ export default function SubmitPage() {
 
         const { uploadUrl, imageUrl } = await presignRes.json();
 
-        let cosRes: Response;
+        let s3Res: Response;
         try {
-          cosRes = await fetch(uploadUrl, {
+          s3Res = await fetch(uploadUrl, {
             method: "PUT",
             headers: { "Content-Type": file.type || "image/jpeg" },
             body: file,
@@ -286,8 +286,8 @@ export default function SubmitPage() {
           return;
         }
 
-        if (!cosRes.ok) {
-          setMessage(`"${file.name}" 上传失败 (${cosRes.status})，已成功上传 ${successCount} 张，请检查文件格式或大小后重新上传`);
+        if (!s3Res.ok) {
+          setMessage(`"${file.name}" 上传失败 (${s3Res.status})，已成功上传 ${successCount} 张，请检查文件格式或大小后重新上传`);
           setUploading(false);
           if (fileRef.current) fileRef.current.value = "";
           return;
