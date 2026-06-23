@@ -259,7 +259,19 @@ export default function DashboardLayout({
             crossOrigin="anonymous"
           />
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+        <main className="relative flex-1 overflow-auto p-4 md:p-6">
+          {user?.name && (
+            <div
+              className="pointer-events-none absolute inset-0 z-50 opacity-[0.08]"
+              aria-hidden="true"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='70'%3E%3Ctext x='70' y='35' font-family='sans-serif' font-size='13' font-weight='500' fill='%23666' text-anchor='middle' dominant-baseline='middle' transform='rotate(-45 70 35)'%3E${encodeURIComponent(user.name)}%3C/text%3E%3C/svg%3E")`,
+                backgroundRepeat: "repeat",
+              }}
+            />
+          )}
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
